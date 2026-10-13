@@ -22,6 +22,8 @@ const programFromEmail = (email: string | undefined): string => {
   const domain = email?.split('@')[1]?.trim().toLowerCase();
   if (domain === 'ds.study.iitm.ac.in') return 'Data Science';
   if (domain === 'es.study.iitm.ac.in') return 'Electronic Systems';
+  if (domain === 'mg.study.iitm.ac.in') return 'Management and Data Science';
+  if (domain === 'ae.study.iitm.ac.in') return 'Aeronautics and Space Technology';
   return '—';
 };
 

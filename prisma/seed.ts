@@ -14,12 +14,14 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 
-const IITM_BRANCH_BY_DOMAIN: Record<string, 'Data Science' | 'Electronic Systems'> = {
+const IITM_BRANCH_BY_DOMAIN: Record<string, 'Data Science' | 'Electronic Systems' | 'Management and Data Science' | 'Aeronautics and Space Technology'> = {
   'ds.study.iitm.ac.in': 'Data Science',
   'es.study.iitm.ac.in': 'Electronic Systems',
+  'mg.study.iitm.ac.in': 'Management and Data Science',
+  'ae.study.iitm.ac.in': 'Aeronautics and Space Technology',
 };
 
-function getBranch(email: string): 'Data Science' | 'Electronic Systems' | null {
+function getBranch(email: string): 'Data Science' | 'Electronic Systems' | 'Management and Data Science' | 'Aeronautics and Space Technology' | null {
   const domain = email.split('@')[1]?.trim().toLowerCase() ?? '';
   return IITM_BRANCH_BY_DOMAIN[domain] ?? null;
 }

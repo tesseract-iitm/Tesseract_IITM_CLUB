@@ -237,7 +237,7 @@ authRouter.post('/dev-login', async (req: Request, res: Response) => {
   if (!isIitmEmail(email)) {
     return ApiResponse.error(res, {
       code: 'INVALID_DOMAIN',
-      message: 'Only @ds.study.iitm.ac.in and @es.study.iitm.ac.in accounts are allowed',
+      message: 'Only @ds.study.iitm.ac.in, @es.study.iitm.ac.in, @mg.study.iitm.ac.in and @ae.study.iitm.ac.in accounts are allowed',
       status: 403,
     });
   }

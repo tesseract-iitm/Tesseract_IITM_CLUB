@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 const ERROR_MESSAGES: Record<string, string> = {
   google_auth_failed: 'Google authentication failed. Try again.',
   google_not_configured: 'Google Sign-In is not configured on this server.',
-  invalid_domain: 'Only @ds.study.iitm.ac.in and @es.study.iitm.ac.in accounts are allowed.',
+  invalid_domain: 'Only @ds.study.iitm.ac.in, @es.study.iitm.ac.in, @mg.study.iitm.ac.in and @ae.study.iitm.ac.in accounts are allowed.',
   invalid_oauth_callback: 'OAuth callback was invalid. Try again.',
 };
 
@@ -59,7 +59,7 @@ export default function SignInPage() {
             <span className="lb-h-line">EMAIL ONLY.</span>
           </h1>
           <p className="lb-sub">
-            Sign in with your @ds or @es Google account. One click. No passwords,
+            Sign in with your @ds, @es, @mg or @ae Google account. One click. No passwords,
             no external logins, no scraping. Admins are bootstrapped via SEED_ADMIN_EMAIL on first OAuth login.
           </p>
 
@@ -137,6 +137,8 @@ export default function SignInPage() {
             <div className="grid grid-cols-1 gap-2 mt-4 lb-mono text-xs">
               <DomainPill ok>@ds.study.iitm.ac.in</DomainPill>
               <DomainPill ok>@es.study.iitm.ac.in</DomainPill>
+              <DomainPill ok>@mg.study.iitm.ac.in</DomainPill>
+              <DomainPill ok>@ae.study.iitm.ac.in</DomainPill>
               <DomainPill>everything else · denied</DomainPill>
             </div>
           </Brackets>

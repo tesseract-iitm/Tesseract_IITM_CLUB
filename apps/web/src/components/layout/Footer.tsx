@@ -255,6 +255,8 @@ export function Footer() {
               <h4>ACCESS</h4>
               <div className="tf-domain">@ds.study.iitm.ac.in</div>
               <div className="tf-domain">@es.study.iitm.ac.in</div>
+              <div className="tf-domain">@mg.study.iitm.ac.in</div>
+              <div className="tf-domain">@ae.study.iitm.ac.in</div>
               <div className="tf-domain tf-deny">external · denied</div>
             </div>
           </div>

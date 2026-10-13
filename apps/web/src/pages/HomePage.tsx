@@ -296,7 +296,7 @@ export default function HomePage() {
               ONE DOOR. <span className="lb-h-accent">INSTITUTE EMAIL ONLY.</span>
             </h2>
             <p className="lb-sub" style={{ margin: '0 auto 24px', maxWidth: 540 }}>
-              Sign in with your @ds or @es institute Google account. One click and you're in —
+              Sign in with your @ds, @es, @mg or @ae institute Google account. One click and you're in —
               no passwords, no external logins, no scraping allowed.
             </p>
             {user ? (

@@ -8,7 +8,7 @@ const STATS: Array<{ label: string; value: string; accent: Accent }> = [
   { label: 'MEMBERS', value: '1,247', accent: 'red' },
   { label: 'EVENTS', value: '07/mo', accent: 'green' },
   { label: 'GAMES', value: '18', accent: 'blue' },
-  { label: 'BRANCHES', value: '@ds · @es', accent: 'purple' },
+  { label: 'BRANCHES', value: '@ds · @es · @mg · @ae', accent: 'purple' },
 ];
 
 const PRINCIPLES: Array<{ tag: string; accent: Accent; title: string; body: string }> = [
@@ -99,7 +99,7 @@ export default function AboutPage() {
                 THE <span className="lb-h-accent">RULES</span> WE PLAY BY.
               </h2>
               <ul className="lb-mono text-sm space-y-3" style={{ color: 'var(--fg-dim)', letterSpacing: '0.03em', textTransform: 'none' }}>
-                <li><span style={{ color: 'var(--c-yellow)' }}>01.</span> Institute email only — @ds, @es. No outsiders.</li>
+                <li><span style={{ color: 'var(--c-yellow)' }}>01.</span> Institute email only — @ds, @es, @mg, @ae. No outsiders.</li>
                 <li><span style={{ color: 'var(--c-green)' }}>02.</span> Free — zero ads, zero subscriptions, zero scraping.</li>
                 <li><span style={{ color: 'var(--c-blue)' }}>03.</span> Open — built in public, code on GitHub, board public.</li>
                 <li><span style={{ color: 'var(--c-purple)' }}>04.</span> Play first — fun before features. Pace yourself.</li>

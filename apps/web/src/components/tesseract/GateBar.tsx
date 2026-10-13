@@ -14,6 +14,14 @@ export function GateBar() {
         <span className="lb-gate-val">@es.study.iitm.ac.in</span>
       </div>
       <div className="lb-gate-item">
+        <span className="lb-gate-label">DOMAIN</span>
+        <span className="lb-gate-val">@mg.study.iitm.ac.in</span>
+      </div>
+      <div className="lb-gate-item">
+        <span className="lb-gate-label">DOMAIN</span>
+        <span className="lb-gate-val">@ae.study.iitm.ac.in</span>
+      </div>
+      <div className="lb-gate-item">
         <span className="lb-gate-label">EXT_USERS</span>
         <span className="lb-gate-val lb-deny">denied</span>
       </div>
