@@ -1,8 +1,11 @@
-import { Link } from 'react-router-dom';
 import { ArrowRight, Users2, Crown } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { Brackets, GateBar, MetaChip } from '@/components/tesseract';
 import { useSettings } from '@/context/SettingsContext';
+
+// Join is handled by Google Forms (Google sign-in + email capture) — no site login, no backend.
+const MEMBER_FORM_URL = 'https://forms.gle/JKpmoNJ7aKGEo1hj9';
+const CORE_FORM_URL = 'https://forms.gle/NFLeVpiFziPjYY2m8';
 
 const iconBoxStyle: React.CSSProperties = {
   width: 56,
@@ -46,7 +49,7 @@ export default function JoinPage() {
           className="lb-hero-right"
           style={{ alignItems: 'stretch', flexDirection: 'column', gap: 20, minHeight: 'auto' }}
         >
-          <Link to={hiringOpen ? '/join/member' : '#'} className="block group" style={{ textDecoration: 'none', pointerEvents: hiringOpen ? 'auto' : 'none', opacity: hiringOpen ? 1 : 0.55 }}>
+          <a href={hiringOpen ? MEMBER_FORM_URL : '#'} target="_blank" rel="noreferrer" className="block group" style={{ textDecoration: 'none', pointerEvents: hiringOpen ? 'auto' : 'none', opacity: hiringOpen ? 1 : 0.55 }}>
             <Brackets tag="path_01 · member" accent="yellow">
               <div className="flex items-start gap-4">
                 <div style={iconBoxStyle}>
@@ -62,14 +65,14 @@ export default function JoinPage() {
                     by the time you close the tab.
                   </p>
                   <div className="lb-mono text-[10px] mt-3 flex items-center gap-2" style={{ color: 'var(--c-yellow)', letterSpacing: '0.12em' }}>
-                    JOIN THE COMMUNITY <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    JOIN THE COMMUNITY · OPENS GOOGLE FORM <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </div>
             </Brackets>
-          </Link>
+          </a>
 
-          <Link to={hiringOpen ? '/join/core' : '#'} className="block group" style={{ textDecoration: 'none', pointerEvents: hiringOpen ? 'auto' : 'none', opacity: hiringOpen ? 1 : 0.55 }}>
+          <a href={hiringOpen ? CORE_FORM_URL : '#'} target="_blank" rel="noreferrer" className="block group" style={{ textDecoration: 'none', pointerEvents: hiringOpen ? 'auto' : 'none', opacity: hiringOpen ? 1 : 0.55 }}>
             <Brackets tag="path_02 · core_team" accent="green">
               <div className="flex items-start gap-4">
                 <div style={iconBoxStyle}>
@@ -85,12 +88,12 @@ export default function JoinPage() {
                     interviewed, then ship cool stuff with the team.
                   </p>
                   <div className="lb-mono text-[10px] mt-3 flex items-center gap-2" style={{ color: 'var(--c-green)', letterSpacing: '0.12em' }}>
-                    START APPLICATION <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    START APPLICATION · OPENS GOOGLE FORM <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </div>
             </Brackets>
-          </Link>
+          </a>
 
           {!hiringOpen && (
             <div
