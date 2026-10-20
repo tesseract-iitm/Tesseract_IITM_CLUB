@@ -76,6 +76,27 @@ services:
         source: /hustlepreneurs/
         destination: "https://iitmparadox.org/events/technicals/122"
         statusCode: 302
+      # Join redirects — Member/Core go straight to their Google Forms; the
+      # form handles auth, no site sign-in. Pinned server-side (same pattern
+      # as the campaign redirects above) so /join/member and /join/core land
+      # on the form even before the SPA loads. The /join chooser itself stays
+      # on the SPA (JoinPage.tsx carries the same two URLs).
+      - type: redirect
+        source: /join/member
+        destination: "https://forms.gle/JKpmoNJ7aKGEo1hj9"
+        statusCode: 302
+      - type: redirect
+        source: /join/member/
+        destination: "https://forms.gle/JKpmoNJ7aKGEo1hj9"
+        statusCode: 302
+      - type: redirect
+        source: /join/core
+        destination: "https://forms.gle/NFLeVpiFziPjYY2m8"
+        statusCode: 302
+      - type: redirect
+        source: /join/core/
+        destination: "https://forms.gle/NFLeVpiFziPjYY2m8"
+        statusCode: 302
       # Static recruitment page. Served directly so Core Team recruitment keeps
       # working while the API free tier is capped — the page collects applications
       # through the Google Form and needs no backend. Must precede the SPA
