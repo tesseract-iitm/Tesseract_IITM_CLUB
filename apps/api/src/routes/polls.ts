@@ -8,6 +8,7 @@ import { auditLog } from '../utils/audit.js';
 import { emailService } from '../utils/email.js';
 import { logger } from '../utils/logger.js';
 import { parsePaginationNumber } from '../utils/pagination.js';
+import { validateVoteSelection } from '../utils/pollVote.js';
 import { ApiResponse } from '../utils/response.js';
 import { generateSlug, generateUniqueSlug } from '../utils/slug.js';
 import { sanitizeText } from '../utils/sanitize.js';
@@ -1028,22 +1029,15 @@ pollsRouter.post('/:idOrSlug/vote', authMiddleware, requireRole('USER'), async (
       return ApiResponse.forbidden(res, 'Voting for this poll has closed');
     }
 
-    if (poll.options.length === 0) {
-      return ApiResponse.conflict(res, 'This is a question-only poll and does not accept votes');
-    }
-
-    const optionIds = Array.from(new Set(parsed.data.optionIds));
-    const validOptionIds = new Set(poll.options.map((option) => option.id));
-    if (!optionIds.every((optionId) => validOptionIds.has(optionId))) {
-      return ApiResponse.badRequest(res, 'One or more selected options are invalid');
-    }
-
-    if (!poll.allowMultipleChoices && optionIds.length !== 1) {
-      return ApiResponse.badRequest(res, 'This poll only allows one selected option');
-    }
-
-    if (poll.allowMultipleChoices && optionIds.length > poll.options.length) {
-      return ApiResponse.badRequest(res, 'Too many options selected');
+    const selection = validateVoteSelection({
+      requestedOptionIds: parsed.data.optionIds,
+      pollOptionIds: poll.options.map((option) => option.id),
+      allowMultipleChoices: poll.allowMultipleChoices,
+    });
+    if (!selection.ok) {
+      return selection.status === 'CONFLICT'
+        ? ApiResponse.conflict(res, selection.message)
+        : ApiResponse.badRequest(res, selection.message);
     }
 
     const existingVote = poll.votes[0] ?? null;
@@ -1051,35 +1045,34 @@ pollsRouter.post('/:idOrSlug/vote', authMiddleware, requireRole('USER'), async (
       return ApiResponse.conflict(res, 'Vote changes are disabled for this poll');
     }
 
-    await withRetry(() =>
+    const outcome = await withRetry(() =>
       prisma.$transaction(async (tx) => {
-        let voteId = existingVote?.id;
-
-        if (!voteId) {
-          const createdVote = await tx.pollVote.create({
-            data: {
-              pollId: poll.id,
-              userId: authUser.id,
-            },
-            select: { id: true },
+        if (!poll.allowVoteChange) {
+          // Claims the single allowed vote atomically, so concurrent first votes cannot both succeed.
+          const claimed = await tx.pollVote.createMany({
+            data: [{ pollId: poll.id, userId: authUser.id }],
+            skipDuplicates: true,
           });
-          voteId = createdVote.id;
-        } else {
-          await tx.pollVoteSelection.deleteMany({ where: { voteId } });
-          await tx.pollVote.update({
-            where: { id: voteId },
-            data: { updatedAt: new Date() },
-          });
+          if (claimed.count === 0) return 'LOCKED' as const;
         }
 
-        await tx.pollVoteSelection.createMany({
-          data: optionIds.map((optionId) => ({
-            voteId: voteId!,
-            optionId,
-          })),
+        const vote = await tx.pollVote.upsert({
+          where: { pollId_userId: { pollId: poll.id, userId: authUser.id } },
+          create: { pollId: poll.id, userId: authUser.id },
+          update: { updatedAt: new Date() },
+          select: { id: true },
         });
+        await tx.pollVoteSelection.deleteMany({ where: { voteId: vote.id } });
+        await tx.pollVoteSelection.createMany({
+          data: selection.optionIds.map((optionId) => ({ voteId: vote.id, optionId })),
+        });
+        return 'SAVED' as const;
       }),
     );
+
+    if (outcome === 'LOCKED') {
+      return ApiResponse.conflict(res, 'Vote changes are disabled for this poll');
+    }
 
     const refreshed = await withRetry(() =>
       findPollByIdOrSlug(req.params.idOrSlug, buildPublicPollInclude(authUser.id)),
