@@ -5,6 +5,7 @@ import { prisma, withRetry } from '../lib/prisma.js';
 import { authMiddleware, getAuthUser, optionalAuthMiddleware } from '../middleware/auth.js';
 import { hasPermission, requireRole } from '../middleware/role.js';
 import { auditLog } from '../utils/audit.js';
+import { isPollClosed, resolveLifecycleChange } from '../utils/pollLifecycle.js';
 import { emailService } from '../utils/email.js';
 import { logger } from '../utils/logger.js';
 import { parsePaginationNumber } from '../utils/pagination.js';
@@ -37,6 +38,10 @@ const updatePollSchema = createPollSchema
 
 const voteSchema = z.object({
   optionIds: z.array(z.string().trim().min(1)).min(1).max(12),
+});
+
+const lifecycleSchema = z.object({
+  action: z.enum(['close', 'reopen']),
 });
 
 const feedbackSchema = z.object({
@@ -163,10 +168,6 @@ type AdminPollDetailRecord = Prisma.PollGetPayload<{ include: typeof adminDetail
 function toPercentage(value: number, total: number): number {
   if (total <= 0) return 0;
   return Math.round((value / total) * 1000) / 10;
-}
-
-function isPollClosed(deadline: Date | null | undefined): boolean {
-  return Boolean(deadline && deadline.getTime() < Date.now());
 }
 
 function getPollShareUrl(slug: string): string {
@@ -735,6 +736,55 @@ pollsRouter.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: Reques
   }
 });
 
+pollsRouter.patch('/:id/status', authMiddleware, requireRole('ADMIN'), async (req: Request, res: Response) => {
+  try {
+    const authUser = getAuthUser(req)!;
+    const parsed = lifecycleSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return ApiResponse.badRequest(res, parsed.error.errors[0]?.message || 'Invalid status payload');
+    }
+
+    const existing = await withRetry(() =>
+      prisma.poll.findUnique({
+        where: { id: req.params.id },
+        select: { id: true, deadline: true },
+      }),
+    );
+    if (!existing) {
+      return ApiResponse.notFound(res, 'Poll not found');
+    }
+
+    const change = resolveLifecycleChange(existing.deadline, parsed.data.action);
+    if (!change.ok) {
+      return ApiResponse.conflict(res, change.message);
+    }
+
+    const poll = await withRetry(() =>
+      prisma.poll.update({
+        where: { id: existing.id },
+        data: { deadline: change.deadline },
+        include: adminDetailInclude,
+      }),
+    );
+
+    await auditLog(authUser.id, parsed.data.action === 'close' ? 'CLOSE' : 'REOPEN', 'poll', poll.id, {
+      question: poll.question,
+    });
+
+    return ApiResponse.success(
+      res,
+      serializeAdminPollDetail(poll),
+      parsed.data.action === 'close' ? 'Poll closed' : 'Poll reopened',
+    );
+  } catch (error) {
+    logger.error('Failed to change poll status', {
+      pollId: req.params.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return ApiResponse.internal(res, 'Failed to change poll status');
+  }
+});
+
 pollsRouter.delete('/:id', authMiddleware, requireRole('ADMIN'), async (req: Request, res: Response) => {
   try {
     const authUser = getAuthUser(req)!;
@@ -1117,12 +1167,15 @@ pollsRouter.post('/:idOrSlug/feedback', authMiddleware, requireRole('USER'), asy
             : [{ slug: req.params.idOrSlug }, { id: req.params.idOrSlug }],
           isPublished: true,
         },
-        select: { id: true, slug: true },
+        select: { id: true, slug: true, deadline: true },
       }),
     );
 
     if (!poll) {
       return ApiResponse.notFound(res, 'Poll not found');
+    }
+    if (isPollClosed(poll.deadline)) {
+      return ApiResponse.forbidden(res, 'Feedback for this poll has closed');
     }
 
     const feedback = await withRetry(() =>
