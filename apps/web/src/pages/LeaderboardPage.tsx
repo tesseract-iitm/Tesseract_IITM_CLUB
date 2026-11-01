@@ -45,7 +45,7 @@ export default function LeaderboardPage() {
     staleTime: 1000 * 60,
   });
 
-  const leaderboard = data?.leaderboard ?? [];
+  const leaderboard = useMemo(() => data?.leaderboard ?? [], [data?.leaderboard]);
   const top3 = leaderboard.slice(0, 3);
   const rest = leaderboard.slice(3, 12);
   const userIdx = useMemo(
