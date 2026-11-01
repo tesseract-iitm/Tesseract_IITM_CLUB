@@ -26,6 +26,9 @@ interface RoundStartPayload {
   roundDurationSeconds: number;
 }
 
+// Matches the server's per-round stroke log size.
+const MAX_REPLACED_STROKES = 2500;
+
 const joinErrorMessages: Record<string, string> = {
   ROOM_NOT_FOUND: 'Room not found.',
   ROOM_ALREADY_STARTED: 'This game has already started.',
@@ -236,6 +239,7 @@ export default function ScribblPlay() {
   const undoLocalStroke = () => {
     strokeHistoryRef.current = strokeHistoryRef.current.slice(0, -12);
     redraw();
+    socketRef.current?.emit('canvas:replace', { strokes: strokeHistoryRef.current.slice(-MAX_REPLACED_STROKES) });
   };
 
   const submitGuess = (event: FormEvent<HTMLFormElement>) => {

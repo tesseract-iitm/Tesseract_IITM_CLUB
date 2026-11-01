@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma, withRetry } from '../../lib/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { registerGameNamespace, type GameSocket } from '../lib/socketNamespace.js';
-import { appendToStrokeLog } from './strokeLog.js';
+import { appendToStrokeLog, canReplaceCanvas, MAX_LOGGED_STROKES } from './strokeLog.js';
 import { roomCodeSchema } from '../lib/gameSchemas.js';
 import { guessSchema, isCloseGuess, isExactGuess } from './content.js';
 import {
@@ -27,6 +27,10 @@ const singleStrokeSchema = z.object({
 const strokeSchema = z.object({
   strokes: z.array(singleStrokeSchema).max(30),
 });
+const replaceStrokesSchema = z.object({
+  strokes: z.array(singleStrokeSchema).max(MAX_LOGGED_STROKES),
+});
+const lastReplaceAtByRoom = new WeakMap<ScribblRoomState, number>();
 
 const STROKE_BUCKET_MAX = 90; // burst tolerance per second
 const STROKE_REFILL_PER_MS = 90 / 1000; // 90 strokes per second steady state
@@ -242,6 +246,18 @@ function register(ns: Namespace): void {
       if (!room || findDrawer(room)?.userId !== authUser.id) return;
       socket.to(roomChannel(room.code)).emit('canvas:clear');
       room.strokeLog = [];
+    });
+
+    socket.on('canvas:replace', async (payload: unknown) => {
+      const room = gameSocket.data.roomCode ? await getScribblRoom(gameSocket.data.roomCode) : null;
+      if (!room || room.status !== 'ACTIVE' || findDrawer(room)?.userId !== authUser.id) return;
+      const now = Date.now();
+      if (!canReplaceCanvas(lastReplaceAtByRoom.get(room), now)) return;
+      const parsed = replaceStrokesSchema.safeParse(payload);
+      if (!parsed.success) return;
+      lastReplaceAtByRoom.set(room, now);
+      room.strokeLog = parsed.data.strokes;
+      socket.to(roomChannel(room.code)).emit('canvas:snapshot', { strokes: room.strokeLog });
     });
 
     socket.on('guess:submit', async (payload: unknown, ack?: (response: unknown) => void) => {

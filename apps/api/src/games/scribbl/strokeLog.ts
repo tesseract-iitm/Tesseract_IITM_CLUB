@@ -15,3 +15,10 @@ export function appendToStrokeLog(log: LoggedStroke[], strokes: LoggedStroke[], 
   const combined = log.concat(strokes);
   return combined.length > max ? combined.slice(combined.length - max) : combined;
 }
+
+export const MIN_REPLACE_INTERVAL_MS = 500;
+
+// A canvas replacement can carry the whole round, so it is limited per room.
+export function canReplaceCanvas(lastReplaceAt: number | undefined, now: number): boolean {
+  return lastReplaceAt === undefined || now - lastReplaceAt >= MIN_REPLACE_INTERVAL_MS;
+}

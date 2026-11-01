@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { appendToStrokeLog, type LoggedStroke } from './strokeLog.js';
+import { appendToStrokeLog, canReplaceCanvas, MIN_REPLACE_INTERVAL_MS, type LoggedStroke } from './strokeLog.js';
 
 const stroke = (n: number): LoggedStroke => ({ from: { x: n, y: n }, to: { x: n + 1, y: n + 1 }, color: 'red', size: 4 });
 
@@ -18,4 +18,16 @@ test('does not modify the input log', () => {
   const original = [stroke(0)];
   appendToStrokeLog(original, [stroke(1)]);
   assert.equal(original.length, 1);
+});
+
+test('allows the first canvas replacement', () => {
+  assert.equal(canReplaceCanvas(undefined, 1_000), true);
+});
+
+test('blocks a second replacement inside the interval', () => {
+  assert.equal(canReplaceCanvas(1_000, 1_000 + MIN_REPLACE_INTERVAL_MS - 1), false);
+});
+
+test('allows a replacement once the interval has passed', () => {
+  assert.equal(canReplaceCanvas(1_000, 1_000 + MIN_REPLACE_INTERVAL_MS), true);
 });
