@@ -5,6 +5,7 @@ import { logger } from '../../utils/logger.js';
 import { registerGameNamespace, type GameSocket } from '../lib/socketNamespace.js';
 import { roomCodeSchema } from '../lib/gameSchemas.js';
 import { guessSchema, isCloseGuess, isExactGuess } from './content.js';
+import { consumeStrokeBudget } from './strokeBudget.js';
 import {
   completeScribblGame,
   getScribblRoom,
@@ -26,9 +27,6 @@ const singleStrokeSchema = z.object({
 const strokeSchema = z.object({
   strokes: z.array(singleStrokeSchema).max(30),
 });
-
-const STROKE_BUCKET_MAX = 90; // burst tolerance per second
-const STROKE_REFILL_PER_MS = 90 / 1000; // 90 strokes per second steady state
 
 function roomChannel(code: string): string {
   return `scribbl:${code}`;
@@ -201,16 +199,16 @@ function register(ns: Namespace): void {
       if (!drawer || drawer.userId !== authUser.id) return;
       const parsed = strokeSchema.safeParse(payload);
       if (!parsed.success) return;
-      // Token bucket: refill since last tick, then debit one token per stroke
       const now = Date.now();
-      const elapsed = Math.max(0, now - room.strokeBudgetUpdatedAt);
-      room.strokeBudget = Math.min(STROKE_BUCKET_MAX, room.strokeBudget + elapsed * STROKE_REFILL_PER_MS);
-      room.strokeBudgetUpdatedAt = now;
-      if (room.strokeBudget < parsed.data.strokes.length) {
-        // Drop excess silently; client sees no stroke from itself or others
-        return;
-      }
-      room.strokeBudget -= parsed.data.strokes.length;
+      const { allowed, budget } = consumeStrokeBudget(
+        { tokens: room.strokeBudget, updatedAt: room.strokeBudgetUpdatedAt },
+        parsed.data.strokes.length,
+        now,
+      );
+      room.strokeBudget = budget.tokens;
+      room.strokeBudgetUpdatedAt = budget.updatedAt;
+      // Drop excess silently; client sees no stroke from itself or others
+      if (!allowed) return;
       socket.to(roomChannel(room.code)).emit('canvas:stroke', parsed.data);
     });
 
