@@ -1,8 +1,8 @@
 import { prisma, withRetry } from '../../lib/prisma.js';
-import { RoomStore, type BaseRoomState } from '../lib/roomStore.js';
-import { generateRoomCode } from '../lib/gameSchemas.js';
 import { canJoinRoom } from './joinRules.js';
 import type { LoggedStroke } from './strokeLog.js';
+import { RoomStore, type BaseRoomState } from '../lib/roomStore.js';
+import { generateRoomCode } from '../lib/gameSchemas.js';
 import { recordGameSessionsBatch } from '../lib/sessionRecorder.js';
 
 export const SCRIBBL_GAME_ID = 'scribbl';
