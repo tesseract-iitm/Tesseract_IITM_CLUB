@@ -11,6 +11,7 @@ import { parsePaginationNumber } from '../utils/pagination.js';
 import { ApiResponse } from '../utils/response.js';
 import { generateSlug, generateUniqueSlug } from '../utils/slug.js';
 import { sanitizeText } from '../utils/sanitize.js';
+import { retryOnUniqueViolation } from '../utils/retryOnUniqueViolation.js';
 
 export const pollsRouter = Router();
 
@@ -663,10 +664,7 @@ pollsRouter.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: Reques
 
     const updateData: Prisma.PollUpdateInput = {
       ...(parsed.data.question !== undefined
-        ? {
-            question: sanitizeText(parsed.data.question).trim(),
-            slug: await generatePollSlug(parsed.data.question, existingPoll.id),
-          }
+        ? { question: sanitizeText(parsed.data.question).trim() }
         : {}),
       ...(parsed.data.description !== undefined
         ? { description: normalizeOptionalText(parsed.data.description) }
@@ -702,12 +700,18 @@ pollsRouter.put('/:id', authMiddleware, requireRole('ADMIN'), async (req: Reques
       }
     }
 
-    const poll = await withRetry(() =>
-      prisma.poll.update({
-        where: { id: existingPoll.id },
-        data: updateData,
-        include: adminDetailInclude,
-      }),
+    const nextQuestion = parsed.data.question;
+    const poll = await retryOnUniqueViolation(() =>
+      withRetry(async () =>
+        prisma.poll.update({
+          where: { id: existingPoll.id },
+          data: {
+            ...updateData,
+            ...(nextQuestion !== undefined ? { slug: await generatePollSlug(nextQuestion, existingPoll.id) } : {}),
+          },
+          include: adminDetailInclude,
+        }),
+      ),
     );
 
     await auditLog(authUser.id, 'UPDATE', 'poll', poll.id, {
