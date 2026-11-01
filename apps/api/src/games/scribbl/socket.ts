@@ -14,6 +14,7 @@ import {
   SCRIBBL_GAME_ID,
   type ScribblRoomState,
 } from './state.js';
+import { DRAWER_BONUS_POINTS } from './scoring.js';
 
 const pointSchema = z.object({ x: z.number(), y: z.number() });
 const singleStrokeSchema = z.object({
@@ -239,7 +240,7 @@ function register(ns: Namespace): void {
         const pointsAwarded = Math.round((remainingMs / (room.roundDurationSeconds * 1000)) * 100);
         const guesser = room.members.find((member) => member.userId === authUser.id);
         if (guesser) guesser.score += pointsAwarded;
-        drawer.score += 50;
+        drawer.score += DRAWER_BONUS_POINTS;
         room.solvedThisRound.add(authUser.id);
         room.guessesThisRound.push({
           userId: authUser.id,

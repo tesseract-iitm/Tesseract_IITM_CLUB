@@ -1,6 +1,7 @@
 import { prisma, withRetry } from '../../lib/prisma.js';
 import { RoomStore, type BaseRoomState } from '../lib/roomStore.js';
 import { generateRoomCode } from '../lib/gameSchemas.js';
+import { drawerBonusByUser } from './scoring.js';
 import { recordGameSessionsBatch } from '../lib/sessionRecorder.js';
 
 export const SCRIBBL_GAME_ID = 'scribbl';
@@ -165,6 +166,7 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
               guesserId: true,
               guesser: { select: { id: true, name: true, avatar: true } },
               pointsAwarded: true,
+              correct: true,
             },
           },
         },
@@ -175,7 +177,8 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
 
   // Scribbl has no ScribblRoomMember table. Rebuild members from anyone who
   // has appeared as drawer or guesser in this room's persisted rounds, plus
-  // the host. Scores are reconstructed by summing guess.pointsAwarded.
+  // the host. Scores are reconstructed from guess.pointsAwarded plus the drawer
+  // bonus for each correct guess.
   const memberMap = new Map<string, { userId: string; name: string; avatar: string | null; score: number; active: boolean }>();
   memberMap.set(roomRow.host.id, {
     userId: roomRow.host.id,
@@ -208,6 +211,11 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
         });
       }
     }
+  }
+
+  for (const [drawerId, bonus] of drawerBonusByUser(roomRow.rounds)) {
+    const drawerMember = memberMap.get(drawerId);
+    if (drawerMember) drawerMember.score += bonus;
   }
 
   const room: ScribblRoomState = {
