@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma, withRetry } from '../../lib/prisma.js';
 import { logger } from '../../utils/logger.js';
 import { registerGameNamespace, type GameSocket } from '../lib/socketNamespace.js';
+import { appendToStrokeLog } from './strokeLog.js';
 import { roomCodeSchema } from '../lib/gameSchemas.js';
 import { guessSchema, isCloseGuess, isExactGuess } from './content.js';
 import {
@@ -14,7 +15,6 @@ import {
   SCRIBBL_GAME_ID,
   type ScribblRoomState,
 } from './state.js';
-import { appendToStrokeLog } from './strokeLog.js';
 
 const pointSchema = z.object({ x: z.number(), y: z.number() });
 const singleStrokeSchema = z.object({
