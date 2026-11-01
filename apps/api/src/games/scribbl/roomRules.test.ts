@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { pickHost, shouldEndRound } from './roomRules.js';
+import { hasEnoughPlayers, pickHost, shouldEndRound } from './roomRules.js';
 
 const member = (userId: string, active = true) => ({ userId, active });
 
@@ -39,4 +39,12 @@ test('host passes to the first connected player when the host leaves', () => {
 
 test('no host when nobody is connected', () => {
   assert.equal(pickHost([member('h', false)], 'h'), null);
+});
+
+test('two connected players are enough to play', () => {
+  assert.equal(hasEnoughPlayers([member('a'), member('b')]), true);
+});
+
+test('one connected player is not enough', () => {
+  assert.equal(hasEnoughPlayers([member('a'), member('b', false)]), false);
 });

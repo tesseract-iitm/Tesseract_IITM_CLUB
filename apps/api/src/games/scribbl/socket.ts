@@ -1,7 +1,7 @@
 import type { Namespace } from 'socket.io';
 import { z } from 'zod';
 import { prisma, withRetry } from '../../lib/prisma.js';
-import { pickHost, shouldEndRound } from './roomRules.js';
+import { hasEnoughPlayers, pickHost, shouldEndRound } from './roomRules.js';
 import { logger } from '../../utils/logger.js';
 import { registerGameNamespace, type GameSocket } from '../lib/socketNamespace.js';
 import { roomCodeSchema } from '../lib/gameSchemas.js';
@@ -99,10 +99,8 @@ async function endRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
   room.currentRound += 1;
   const activeMembers = room.members.filter((m) => m.active);
   const totalRounds = room.roundCount * Math.max(1, activeMembers.length);
-  if (room.currentRound >= totalRounds || activeMembers.length < 2) {
-    await completeScribblGame(room);
-    ns.to(roomChannel(room.code)).emit('game:end', { finalScores: publicScribblRoom(room).members });
-    emitState(ns, room);
+  if (room.currentRound >= totalRounds || !hasEnoughPlayers(room.members)) {
+    await finishGame(ns, room);
     return;
   }
   const next = pickNextDrawer(room);
@@ -114,12 +112,22 @@ async function endRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
   room.nextRoundTimer.unref?.();
 }
 
+async function finishGame(ns: Namespace, room: ScribblRoomState): Promise<void> {
+  await completeScribblGame(room);
+  ns.to(roomChannel(room.code)).emit('game:end', { finalScores: publicScribblRoom(room).members });
+  emitState(ns, room);
+}
+
 async function startRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
   if (room.status !== 'ACTIVE') return;
-  if (!room.currentDrawerId) {
-    const first = pickNextDrawer(room);
-    if (!first) return;
-    room.currentDrawerId = first.userId;
+  if (!hasEnoughPlayers(room.members)) {
+    await finishGame(ns, room);
+    return;
+  }
+  if (!findDrawer(room)?.active) {
+    const next = pickNextDrawer(room);
+    if (!next) return;
+    room.currentDrawerId = next.userId;
   }
   const drawer = findDrawer(room);
   if (!drawer) return;
