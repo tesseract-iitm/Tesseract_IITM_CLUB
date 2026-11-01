@@ -9,9 +9,9 @@ import { emailService } from '../utils/email.js';
 import { logger } from '../utils/logger.js';
 import { parsePaginationNumber } from '../utils/pagination.js';
 import { ApiResponse } from '../utils/response.js';
-import { retryOnUniqueViolation } from '../utils/retryOnUniqueViolation.js';
 import { generateSlug, generateUniqueSlug } from '../utils/slug.js';
 import { sanitizeText } from '../utils/sanitize.js';
+import { retryOnUniqueViolation } from '../utils/retryOnUniqueViolation.js';
 
 export const pollsRouter = Router();
 
