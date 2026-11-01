@@ -204,7 +204,7 @@ export default function SmashKartPlay() {
       }
       stateRef.current.keys.add(k);
       if (k === ' ' && stateRef.current.playerHasItem) {
-        useItem();
+        activateItem();
       }
     };
     const up = (e: KeyboardEvent) => {
@@ -219,7 +219,7 @@ export default function SmashKartPlay() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const useItem = useCallback(() => {
+  const activateItem = useCallback(() => {
     const s = stateRef.current;
     const player = s.karts[0];
     if (!player || !s.playerHasItem) return;
