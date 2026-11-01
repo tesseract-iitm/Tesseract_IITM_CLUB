@@ -1,6 +1,8 @@
 import { prisma, withRetry } from '../../lib/prisma.js';
 import { RoomStore, type BaseRoomState } from '../lib/roomStore.js';
 import { generateRoomCode } from '../lib/gameSchemas.js';
+import { canJoinRoom } from './joinRules.js';
+import type { LoggedStroke } from './strokeLog.js';
 import { recordGameSessionsBatch } from '../lib/sessionRecorder.js';
 
 export const SCRIBBL_GAME_ID = 'scribbl';
@@ -37,6 +39,7 @@ export interface ScribblRoomState extends BaseRoomState {
   strokeBudgetUpdatedAt: number;
   solvedThisRound: Set<string>;
   guessesThisRound: ScribblGuessRecord[];
+  strokeLog: LoggedStroke[];
   members: ScribblMember[];
   sessionsRecorded: boolean;
   finalizingPromise?: Promise<void>;
@@ -136,6 +139,7 @@ export async function createScribblRoom(input: {
     strokeBudgetUpdatedAt: Date.now(),
     solvedThisRound: new Set<string>(),
     guessesThisRound: [],
+    strokeLog: [],
     members: [{
       userId: input.host.id,
       name: input.host.name,
@@ -232,6 +236,7 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
     strokeBudgetUpdatedAt: Date.now(),
     solvedThisRound: new Set<string>(),
     guessesThisRound: [],
+    strokeLog: [],
     members: Array.from(memberMap.values()),
     sessionsRecorded: roomRow.status === 'FINISHED',
   };
@@ -245,8 +250,8 @@ export async function joinScribblRoom(input: {
 }): Promise<ScribblRoomState> {
   const room = await getScribblRoom(input.code);
   if (!room) throw new Error('ROOM_NOT_FOUND');
-  if (room.status !== 'LOBBY') throw new Error('ROOM_ALREADY_STARTED');
   const existing = room.members.find((member) => member.userId === input.user.id);
+  if (!canJoinRoom(room.status, Boolean(existing))) throw new Error('ROOM_ALREADY_STARTED');
   if (existing) {
     existing.active = true;
   } else {
