@@ -14,6 +14,7 @@ import {
   SCRIBBL_GAME_ID,
   type ScribblRoomState,
 } from './state.js';
+import { pickHost, shouldEndRound } from './roomRules.js';
 
 const pointSchema = z.object({ x: z.number(), y: z.number() });
 const singleStrokeSchema = z.object({
@@ -52,16 +53,14 @@ function pickNextDrawer(room: ScribblRoomState): typeof room.members[number] | n
   return active[(currentIdx + 1) % active.length] ?? null;
 }
 
-async function persistRound(room: ScribblRoomState): Promise<void> {
-  if (!room.promptWord || !room.roundStartedAt) return;
+async function persistRound(room: ScribblRoomState, promptWord: string, startedAt: number): Promise<void> {
   const drawer = findDrawer(room);
   if (!drawer) return;
-  const startedAt = room.roundStartedAt;
   const round = await withRetry(() => prisma.scribblRound.create({
     data: {
       roomId: room.roomId,
       drawerId: drawer.userId,
-      promptWord: room.promptWord ?? '',
+      promptWord,
       durationSeconds: room.roundDurationSeconds,
       startedAt: new Date(startedAt),
       endedAt: new Date(),
@@ -80,19 +79,23 @@ async function persistRound(room: ScribblRoomState): Promise<void> {
 }
 
 async function endRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
-  if (room.status !== 'ACTIVE' || !room.promptWord) return;
+  if (room.status !== 'ACTIVE' || !room.promptWord || !room.roundStartedAt) return;
+  // Claim the round before the first await so a second trigger (timer and last
+  // correct guess, or a disconnect) cannot end and persist it twice.
+  const word = room.promptWord;
+  const startedAt = room.roundStartedAt;
+  room.promptWord = null;
+  room.roundStartedAt = null;
   if (room.roundTimer) {
     clearTimeout(room.roundTimer);
     room.roundTimer = null;
   }
-  await persistRound(room);
+  await persistRound(room, word, startedAt);
   ns.to(roomChannel(room.code)).emit('round:end', {
-    word: room.promptWord,
+    word,
     scores: publicScribblRoom(room).members,
     guesses: room.guessesThisRound,
   });
-  room.promptWord = null;
-  room.roundStartedAt = null;
   room.currentRound += 1;
   const activeMembers = room.members.filter((m) => m.active);
   const totalRounds = room.roundCount * Math.max(1, activeMembers.length);
@@ -104,9 +107,11 @@ async function endRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
   }
   const next = pickNextDrawer(room);
   room.currentDrawerId = next?.userId ?? null;
-  setTimeout(() => {
+  room.nextRoundTimer = setTimeout(() => {
+    room.nextRoundTimer = null;
     void startRound(ns, room);
   }, 5000);
+  room.nextRoundTimer.unref?.();
 }
 
 async function startRound(ns: Namespace, room: ScribblRoomState): Promise<void> {
@@ -248,8 +253,7 @@ function register(ns: Namespace): void {
           pointsAwarded,
         });
         ns.to(roomChannel(room.code)).emit('guess:correct', { byName: authUser.name, pointsAwarded });
-        const nonDrawers = room.members.filter((member) => member.userId !== drawer.userId);
-        if (nonDrawers.every((member) => room.solvedThisRound.has(member.userId))) {
+        if (shouldEndRound({ members: room.members, drawerId: drawer.userId, solvedUserIds: room.solvedThisRound })) {
           await endRound(ns, room);
         }
         ack?.({ ok: true, correct: true, pointsAwarded });
@@ -275,15 +279,31 @@ function register(ns: Namespace): void {
       if (!room || !member) return;
       member.active = false;
       if (room.status === 'LOBBY' && room.hostUserId === authUser.id) {
-        room.status = 'ABORTED';
-        await withRetry(() => prisma.scribblRoom.update({
-          where: { id: room.roomId },
-          data: { status: 'ABORTED', endedAt: new Date() },
-          select: { id: true },
-        }));
-        ns.to(roomChannel(room.code)).emit('room:aborted');
+        const nextHostId = pickHost(room.members, authUser.id);
+        if (nextHostId) {
+          room.hostUserId = nextHostId;
+        } else {
+          room.status = 'ABORTED';
+          await withRetry(() => prisma.scribblRoom.update({
+            where: { id: room.roomId },
+            data: { status: 'ABORTED', endedAt: new Date() },
+            select: { id: true },
+          }));
+          ns.to(roomChannel(room.code)).emit('room:aborted');
+        }
       }
       emitState(ns, room);
+      if (
+        room.status === 'ACTIVE' &&
+        shouldEndRound({ members: room.members, drawerId: room.currentDrawerId, solvedUserIds: room.solvedThisRound })
+      ) {
+        endRound(ns, room).catch((error) => {
+          logger.error('Failed to end Scribbl round after disconnect', {
+            code: room.code,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      }
     });
   });
 }

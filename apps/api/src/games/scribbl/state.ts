@@ -31,6 +31,7 @@ export interface ScribblRoomState extends BaseRoomState {
   promptWord: string | null;
   roundStartedAt: number | null;
   roundTimer: ReturnType<typeof setTimeout> | null;
+  nextRoundTimer: ReturnType<typeof setTimeout> | null;
   strokeWindowStartedAt: number;
   strokeCount: number;
   strokeBudget: number;
@@ -49,6 +50,10 @@ export const scribblRooms = new RoomStore<ScribblRoomState>({
     if (room.roundTimer) {
       clearTimeout(room.roundTimer);
       room.roundTimer = null;
+    }
+    if (room.nextRoundTimer) {
+      clearTimeout(room.nextRoundTimer);
+      room.nextRoundTimer = null;
     }
     if (room.status === 'LOBBY' || room.status === 'ACTIVE') {
       try {
@@ -130,6 +135,7 @@ export async function createScribblRoom(input: {
     promptWord: null,
     roundStartedAt: null,
     roundTimer: null,
+    nextRoundTimer: null,
     strokeWindowStartedAt: 0,
     strokeCount: 0,
     strokeBudget: 90,
@@ -226,6 +232,7 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
     promptWord: null,
     roundStartedAt: null,
     roundTimer: null,
+    nextRoundTimer: null,
     strokeWindowStartedAt: 0,
     strokeCount: 0,
     strokeBudget: 90,
@@ -284,6 +291,10 @@ async function doCompleteScribblGame(room: ScribblRoomState): Promise<void> {
   if (room.roundTimer) {
     clearTimeout(room.roundTimer);
     room.roundTimer = null;
+  }
+  if (room.nextRoundTimer) {
+    clearTimeout(room.nextRoundTimer);
+    room.nextRoundTimer = null;
   }
   await withRetry(() => prisma.scribblRoom.update({
     where: { id: room.roomId },
