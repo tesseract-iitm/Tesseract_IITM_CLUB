@@ -2,6 +2,7 @@ import { prisma, withRetry } from '../../lib/prisma.js';
 import { RoomStore, type BaseRoomState } from '../lib/roomStore.js';
 import { generateRoomCode } from '../lib/gameSchemas.js';
 import { recordGameSessionsBatch } from '../lib/sessionRecorder.js';
+import { STROKE_BUCKET_MAX } from './strokeBudget.js';
 
 export const SCRIBBL_GAME_ID = 'scribbl';
 
@@ -132,7 +133,7 @@ export async function createScribblRoom(input: {
     roundTimer: null,
     strokeWindowStartedAt: 0,
     strokeCount: 0,
-    strokeBudget: 90,
+    strokeBudget: STROKE_BUCKET_MAX,
     strokeBudgetUpdatedAt: Date.now(),
     solvedThisRound: new Set<string>(),
     guessesThisRound: [],
@@ -228,7 +229,7 @@ export async function getScribblRoom(code: string): Promise<ScribblRoomState | n
     roundTimer: null,
     strokeWindowStartedAt: 0,
     strokeCount: 0,
-    strokeBudget: 90,
+    strokeBudget: STROKE_BUCKET_MAX,
     strokeBudgetUpdatedAt: Date.now(),
     solvedThisRound: new Set<string>(),
     guessesThisRound: [],
