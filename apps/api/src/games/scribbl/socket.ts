@@ -1,4 +1,4 @@
-import type { Namespace } from 'socket.io';
+import type { Namespace, Socket } from 'socket.io';
 import { z } from 'zod';
 import { prisma, withRetry } from '../../lib/prisma.js';
 import { logger } from '../../utils/logger.js';
@@ -14,6 +14,7 @@ import {
   SCRIBBL_GAME_ID,
   type ScribblRoomState,
 } from './state.js';
+import { appendToStrokeLog } from './strokeLog.js';
 
 const pointSchema = z.object({ x: z.number(), y: z.number() });
 const singleStrokeSchema = z.object({
@@ -123,6 +124,7 @@ async function startRound(ns: Namespace, room: ScribblRoomState): Promise<void> 
   room.roundStartedAt = Date.now();
   room.solvedThisRound = new Set<string>();
   room.guessesThisRound = [];
+  room.strokeLog = [];
   const drawerSocketIds = await ns.in(roomChannel(room.code)).fetchSockets();
   for (const connected of drawerSocketIds) {
     const socket = connected as unknown as GameSocket;
@@ -142,6 +144,25 @@ async function startRound(ns: Namespace, room: ScribblRoomState): Promise<void> 
     void endRound(ns, room);
   }, room.roundDurationSeconds * 1000);
   room.roundTimer.unref?.();
+}
+
+// A player who joins while a round is running needs the round details and the
+// drawing so far, because those were only ever broadcast live.
+function sendRoundStateToRejoiner(socket: Socket, room: ScribblRoomState, userId: string): void {
+  if (room.status !== 'ACTIVE' || !room.promptWord) return;
+  const drawer = findDrawer(room);
+  if (!drawer) return;
+  if (drawer.userId === userId) {
+    socket.emit('round:prompt', { word: room.promptWord });
+  } else {
+    socket.emit('round:start', {
+      drawerId: drawer.userId,
+      drawerName: drawer.name,
+      wordLength: room.promptWord.length,
+      roundDurationSeconds: room.roundDurationSeconds,
+    });
+  }
+  socket.emit('canvas:snapshot', { strokes: room.strokeLog });
 }
 
 function register(ns: Namespace): void {
@@ -167,6 +188,7 @@ function register(ns: Namespace): void {
         gameSocket.data.roomCode = room.code;
         await socket.join(roomChannel(room.code));
         emitState(ns, room);
+        sendRoundStateToRejoiner(socket, room, authUser.id);
         ack?.({ ok: true, room: publicScribblRoom(room) });
       } catch (error) {
         ack?.({ ok: false, error: error instanceof Error ? error.message : 'ROOM_JOIN_FAILED' });
@@ -212,12 +234,14 @@ function register(ns: Namespace): void {
       }
       room.strokeBudget -= parsed.data.strokes.length;
       socket.to(roomChannel(room.code)).emit('canvas:stroke', parsed.data);
+      room.strokeLog = appendToStrokeLog(room.strokeLog, parsed.data.strokes);
     });
 
     socket.on('canvas:clear', async () => {
       const room = gameSocket.data.roomCode ? await getScribblRoom(gameSocket.data.roomCode) : null;
       if (!room || findDrawer(room)?.userId !== authUser.id) return;
       socket.to(roomChannel(room.code)).emit('canvas:clear');
+      room.strokeLog = [];
     });
 
     socket.on('guess:submit', async (payload: unknown, ack?: (response: unknown) => void) => {

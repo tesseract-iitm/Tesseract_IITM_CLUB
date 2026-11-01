@@ -26,6 +26,11 @@ interface RoundStartPayload {
   roundDurationSeconds: number;
 }
 
+const joinErrorMessages: Record<string, string> = {
+  ROOM_NOT_FOUND: 'Room not found.',
+  ROOM_ALREADY_STARTED: 'This game has already started.',
+};
+
 const colors = ['var(--c-red)', 'var(--c-yellow)', 'var(--c-green)', 'var(--c-blue)', 'var(--c-purple)', 'var(--c-orange)', 'rgba(255,255,255,0.92)'];
 
 function drawStroke(canvas: HTMLCanvasElement, stroke: CanvasStroke) {
@@ -84,7 +89,21 @@ export default function ScribblPlay() {
     socketRef.current?.disconnect();
     const socket = io(`${SOCKET_URL}/games/scribbl`, { transports: ['polling', 'websocket'], auth: { token } });
     socketRef.current = socket;
-    socket.on('connect', () => socket.emit('room:join', { code: roomCode }));
+    let connectionLost = false;
+    socket.on('connect', () => {
+      if (connectionLost) {
+        connectionLost = false;
+        toast.success('Reconnected.');
+      }
+      socket.emit('room:join', { code: roomCode }, (response?: { ok?: boolean; error?: string }) => {
+        if (response?.ok === false) toast.error(joinErrorMessages[response.error ?? ''] ?? 'Could not join the room.');
+      });
+    });
+    socket.on('disconnect', (reason: string) => {
+      if (reason === 'io client disconnect') return;
+      connectionLost = true;
+      toast.warning('Connection lost. Reconnecting...');
+    });
     socket.on('room:state', (nextRoom: ScribblRoom) => setRoom(nextRoom));
     socket.on('round:prompt', ({ word: nextWord }: { word: string }) => {
       clearCanvas(canvasRef.current);
@@ -113,6 +132,13 @@ export default function ScribblPlay() {
     socket.on('canvas:clear', () => {
       clearCanvas(canvasRef.current);
       strokeHistoryRef.current = [];
+    });
+    socket.on('canvas:snapshot', ({ strokes }: { strokes: CanvasStroke[] }) => {
+      strokeHistoryRef.current = strokes;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      clearCanvas(canvas);
+      for (const stroke of strokes) drawStroke(canvas, stroke);
     });
     socket.on('guess:close', ({ byName }: { byName: string }) => setLog((current) => [`${byName} is close.`, ...current].slice(0, 8)));
     socket.on('guess:correct', ({ byName, pointsAwarded }: { byName: string; pointsAwarded: number }) => setLog((current) => [`${byName} guessed it for ${pointsAwarded} pts.`, ...current].slice(0, 8)));
@@ -202,6 +228,10 @@ export default function ScribblPlay() {
     clearCanvas(canvas);
     for (const stroke of strokeHistoryRef.current) drawStroke(canvas, stroke);
   };
+
+  useEffect(() => {
+    if (room?.status === 'ACTIVE') redraw();
+  }, [room?.status]);
 
   const undoLocalStroke = () => {
     strokeHistoryRef.current = strokeHistoryRef.current.slice(0, -12);
