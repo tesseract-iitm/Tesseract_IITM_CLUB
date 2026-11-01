@@ -1775,6 +1775,8 @@ export const api = {
     request<AdminPollDetail>('/polls', { method: 'POST', body: JSON.stringify(data), token }),
   updatePoll: (id: string, data: Partial<PollInput>, token: string) =>
     request<AdminPollDetail>(`/polls/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+  setPollStatus: (id: string, action: 'close' | 'reopen', token: string) =>
+    request<AdminPollDetail>(`/polls/${id}/status`, { method: 'PATCH', body: JSON.stringify({ action }), token }),
   deletePoll: (id: string, token: string) =>
     request<{ id: string }>(`/polls/${id}`, { method: 'DELETE', token }),
   voteOnPoll: (idOrSlug: string, optionIds: string[], token: string) =>

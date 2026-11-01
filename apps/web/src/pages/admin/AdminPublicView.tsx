@@ -6,6 +6,8 @@ import {
   Copy,
   Download,
   Loader2,
+  Lock,
+  LockOpen,
   MessageSquare,
   Pencil,
   Plus,
@@ -529,6 +531,23 @@ export default function AdminPublicView() {
     }
   };
 
+  const handleToggleOpen = async () => {
+    if (!token || !selectedPoll) return;
+    const action = selectedPoll.isClosed ? 'reopen' : 'close';
+
+    try {
+      setSaving(true);
+      const detail = await api.setPollStatus(selectedPoll.id, action, token);
+      setSelectedPoll(detail);
+      toast.success(action === 'close' ? 'Poll closed.' : 'Poll reopened.');
+      await loadPolls(detail.id);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update poll status');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleExport = async () => {
     if (!token || !selectedPoll) return;
 
@@ -750,6 +769,10 @@ export default function AdminPublicView() {
                     <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
                       {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       Export
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleToggleOpen} disabled={saving}>
+                      {selectedPoll.isClosed ? <LockOpen className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                      {selectedPoll.isClosed ? 'Reopen' : 'Close'}
                     </Button>
                     <Button variant="outline" size="sm" onClick={openEditForm}>
                       <Pencil className="h-4 w-4" />
