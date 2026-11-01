@@ -9,6 +9,7 @@ import { emailService } from '../utils/email.js';
 import { logger } from '../utils/logger.js';
 import { parsePaginationNumber } from '../utils/pagination.js';
 import { ApiResponse } from '../utils/response.js';
+import { pollVoteRateLimiter } from '../utils/pollVoteRateLimiter.js';
 import { generateSlug, generateUniqueSlug } from '../utils/slug.js';
 import { sanitizeText } from '../utils/sanitize.js';
 
@@ -998,7 +999,7 @@ pollsRouter.get('/:idOrSlug', optionalAuthMiddleware, async (req: Request, res: 
   }
 });
 
-pollsRouter.post('/:idOrSlug/vote', authMiddleware, requireRole('USER'), async (req: Request, res: Response) => {
+pollsRouter.post('/:idOrSlug/vote', authMiddleware, requireRole('USER'), pollVoteRateLimiter, async (req: Request, res: Response) => {
   try {
     const authUser = ensurePollParticipant(req, res);
     if (!authUser) return;
