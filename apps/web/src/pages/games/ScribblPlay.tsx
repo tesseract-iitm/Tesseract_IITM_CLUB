@@ -4,6 +4,7 @@ import { io, type Socket } from 'socket.io-client';
 import { toast } from 'sonner';
 import { api, SOCKET_URL, type GameParticipant, type ScribblRoom } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { createStrokeBuffer } from '@/lib/strokeBuffer';
 import { PlayError, PlayShell } from './PlayShell';
 
 interface CanvasPoint {
@@ -65,8 +66,8 @@ export default function ScribblPlay() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
   const lastPointRef = useRef<CanvasPoint | null>(null);
-  const lastSentAtRef = useRef(0);
   const strokeHistoryRef = useRef<CanvasStroke[]>([]);
+  const strokeBufferRef = useRef<ReturnType<typeof createStrokeBuffer> | null>(null);
   const [room, setRoom] = useState<ScribblRoom | null>(null);
   const [word, setWord] = useState<string | null>(null);
   const [roundHint, setRoundHint] = useState<RoundStartPayload | null>(null);
@@ -78,6 +79,13 @@ export default function ScribblPlay() {
   const [brushSize, setBrushSize] = useState(6);
   const [eraser, setEraser] = useState(false);
   const code = params.get('room');
+
+  const getStrokeBuffer = () => {
+    strokeBufferRef.current ??= createStrokeBuffer({
+      send: (strokes) => socketRef.current?.emit('canvas:stroke', { strokes }),
+    });
+    return strokeBufferRef.current;
+  };
 
   const connect = (roomCode: string) => {
     if (!token) return;
@@ -104,9 +112,8 @@ export default function ScribblPlay() {
     });
     socket.on('canvas:stroke', ({ strokes }: { strokes: CanvasStroke[] }) => {
       const canvas = canvasRef.current;
-      if (!canvas) return;
       for (const stroke of strokes) {
-        drawStroke(canvas, stroke);
+        if (canvas) drawStroke(canvas, stroke);
         strokeHistoryRef.current.push(stroke);
       }
     });
@@ -184,14 +191,11 @@ export default function ScribblPlay() {
     drawStroke(event.currentTarget, stroke);
     strokeHistoryRef.current.push(stroke);
     lastPointRef.current = point;
-    const now = Date.now();
-    if (now - lastSentAtRef.current > 50) {
-      socketRef.current?.emit('canvas:stroke', { strokes: [stroke] });
-      lastSentAtRef.current = now;
-    }
+    getStrokeBuffer().add(stroke);
   };
 
   const endStroke = () => {
+    getStrokeBuffer().flush();
     drawingRef.current = false;
     lastPointRef.current = null;
   };
@@ -202,6 +206,10 @@ export default function ScribblPlay() {
     clearCanvas(canvas);
     for (const stroke of strokeHistoryRef.current) drawStroke(canvas, stroke);
   };
+
+  useEffect(() => {
+    if (room?.status === 'ACTIVE') redraw();
+  }, [room?.status]);
 
   const undoLocalStroke = () => {
     strokeHistoryRef.current = strokeHistoryRef.current.slice(0, -12);
@@ -302,6 +310,7 @@ export default function ScribblPlay() {
                             className="lb-btn-ghost"
                             type="button"
                             onClick={() => {
+                              getStrokeBuffer().flush();
                               clearCanvas(canvasRef.current);
                               strokeHistoryRef.current = [];
                               socketRef.current?.emit('canvas:clear');
