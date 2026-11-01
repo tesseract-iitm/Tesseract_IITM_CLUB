@@ -1,6 +1,7 @@
 import type { Namespace } from 'socket.io';
 import { z } from 'zod';
 import { prisma, withRetry } from '../../lib/prisma.js';
+import { pickHost, shouldEndRound } from './roomRules.js';
 import { logger } from '../../utils/logger.js';
 import { registerGameNamespace, type GameSocket } from '../lib/socketNamespace.js';
 import { roomCodeSchema } from '../lib/gameSchemas.js';
@@ -14,7 +15,6 @@ import {
   SCRIBBL_GAME_ID,
   type ScribblRoomState,
 } from './state.js';
-import { pickHost, shouldEndRound } from './roomRules.js';
 
 const pointSchema = z.object({ x: z.number(), y: z.number() });
 const singleStrokeSchema = z.object({
