@@ -556,7 +556,9 @@ const startHttpServerWithRetry = (attempt = 1) => {
   httpServer.listen(PORT, () => {
     httpServer.removeListener('error', onError);
     logger.info(`🚀 Server running on http://localhost:${PORT}`, { environment: NODE_ENV });
-    void recoverActiveRounds();
+    void recoverActiveRounds().catch((err) => {
+      logger.warn('Active rounds recovery skipped (database unavailable):', { error: err instanceof Error ? err.message : String(err) });
+    });
   });
 };
 
@@ -579,8 +581,13 @@ initializeDatabase()
     startHttpServerWithRetry();
   })
   .catch((error) => {
-    logger.error('Failed to start server:', error);
-    process.exit(1);
+    logger.error('Failed to initialize database on startup:', error);
+    if (NODE_ENV !== 'production') {
+      logger.warn('⚠️ Starting HTTP and Socket.io server in degraded development mode. Verify your DATABASE_URL credentials in apps/api/.env when ready.');
+      startHttpServerWithRetry();
+    } else {
+      process.exit(1);
+    }
   });
 
 export default app;

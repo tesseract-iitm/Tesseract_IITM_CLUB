@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { api, type TeamMember, type Credit } from '@/lib/api';
 import { Brackets, MetaChip, type Accent } from '@/components/tesseract';
+import { TESSERACT_TEAM_MEMBERS } from '@/data/teamData';
 
 interface TeamMemberProfile extends TeamMember {
   userId?: string;
@@ -64,7 +65,13 @@ export default function TeamMemberProfilePage() {
           // non-critical
         }
       } catch {
-        setNotFound(true);
+        // Fallback to static authoritative team dataset
+        const local = TESSERACT_TEAM_MEMBERS.find((m) => m.slug === slug || m.id === slug);
+        if (local) {
+          setMember(local as TeamMemberProfile);
+        } else {
+          setNotFound(true);
+        }
       } finally {
         setLoading(false);
       }

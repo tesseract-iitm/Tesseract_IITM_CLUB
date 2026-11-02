@@ -232,6 +232,7 @@ export interface GameParticipant {
   accuracy?: number;
   rank?: number | null;
   charsTyped?: number;
+  finished?: boolean;
 }
 
 export interface TypeWarsPassage {
