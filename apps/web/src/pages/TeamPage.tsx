@@ -30,6 +30,28 @@ const TEAM_ACCENTS: Accent[] = ['yellow', 'green', 'blue', 'purple', 'orange', '
 
 type WingCategory = 'ALL' | 'COUNCIL' | 'CORE_WING' | 'GAME_WING';
 
+const CORE_WING_NAMES = [
+  'Webops',
+  'Graphic Design',
+  'Video Editing',
+  'Sponsorship & Research',
+  'PR & Outreach',
+  'Streamer & Caster',
+  'Game-Dev',
+  'Escape Wing',
+];
+
+const GAME_WING_NAMES = [
+  'BGMI',
+  'Free Fire',
+  'Clash of Clans',
+  'Casual Games',
+  'Valorant',
+  'CODM',
+  'Minecraft',
+  'Among Us',
+];
+
 export default function TeamPage() {
   const [activeWing, setActiveWing] = useState<WingCategory>('ALL');
   const [activeDepartment, setActiveDepartment] = useState('All');
@@ -159,6 +181,40 @@ export default function TeamPage() {
     );
   }, [activeDepartment, activeWing, searchQuery, councilList]);
 
+  // Department Leads helper for Organogram pills
+  const getDeptLeads = (deptName: string) => {
+    const mems = teamMembers.filter((m) => m.department === deptName);
+    const explicitLeads = mems.filter((m) => m.tier === 'HEAD' || m.tier === 'CO_HEAD');
+    if (explicitLeads.length > 0) return explicitLeads;
+    return mems.slice(0, 1);
+  };
+
+  // Smooth scroll handler from Organogram nodes to department sections
+  const handleScrollToDept = (deptName: string) => {
+    setActiveWing('ALL');
+    setActiveDepartment('All');
+    setSearchQuery('');
+    setTimeout(() => {
+      const targetId = `dept-${deptName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
+
+  const handleScrollToCouncil = () => {
+    setActiveWing('ALL');
+    setActiveDepartment('All');
+    setSearchQuery('');
+    setTimeout(() => {
+      const element = document.getElementById('the-council');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
+
   return (
     <Layout>
       <SEO
@@ -224,6 +280,155 @@ export default function TeamPage() {
             <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between text-[11px] lb-mono text-[var(--fg-dim)]">
               <span>IIT MADRAS BS</span>
               <span className="text-[var(--c-green)]">● VERIFIED</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ======================================================== */}
+      {/* 01. SOCIETY ORGANOGRAM & HIERARCHY TREE */}
+      {/* Inspired by Sundarbans House hierarchy visual architecture */}
+      {/* ======================================================== */}
+      <section className="lb-modules" style={{ paddingTop: 0, paddingBottom: 32 }}>
+        <div className="border border-[var(--line)] bg-[var(--surface-1)]/70 backdrop-blur-md p-6 sm:p-8 relative overflow-hidden">
+          {/* Organogram Header */}
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <div className="inline-flex items-center gap-1.5 lb-mono text-xs uppercase text-[var(--c-yellow)] font-bold tracking-widest mb-2">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>01 // SOCIETY ORGANOGRAM</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-white">
+              How The Society Fits Together
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--fg-mute)] mt-1.5 leading-relaxed">
+              Tap any council officer or department below to jump directly to their roster and dossiers.
+            </p>
+          </div>
+
+          {/* Tree Diagram Container */}
+          <div className="flex flex-col items-center">
+            {/* Top Root Node: The Council */}
+            <button
+              type="button"
+              onClick={handleScrollToCouncil}
+              className="group relative flex flex-col items-center p-4 px-6 sm:px-8 bg-[var(--surface-0)] border-2 border-[var(--c-yellow)]/70 hover:border-[var(--c-yellow)] rounded-2xl shadow-lg hover:shadow-[0_0_24px_rgba(201,160,46,0.3)] transition-all transform hover:-translate-y-0.5 cursor-pointer max-w-sm"
+              title="Click to view The Council"
+            >
+              {/* Overlapping Avatar Stack of Council Officers */}
+              <div className="flex items-center justify-center mb-2.5">
+                {councilList.map((c, i) => (
+                  <img
+                    key={c.id || i}
+                    src={c.imageUrl}
+                    alt={c.name}
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[var(--c-yellow)] object-cover -ml-2.5 first:ml-0 shadow-md transition-transform group-hover:scale-105"
+                  />
+                ))}
+              </div>
+              <span className="font-bold text-sm sm:text-base text-white group-hover:text-[var(--c-yellow)] uppercase tracking-wide transition-colors">
+                The Council
+              </span>
+              <span className="text-[10px] lb-mono uppercase tracking-wider text-[var(--c-yellow)] font-semibold mt-0.5">
+                Executive Governing Body · 4 Officers
+              </span>
+            </button>
+
+            {/* Tree Branch: Vertical stem down from Council */}
+            <div className="w-[2px] h-6 bg-[var(--line)]" />
+
+            {/* Tree Branch: Horizontal Cross-Bar (visible on desktop) */}
+            <div className="hidden md:block w-full max-w-3xl h-6 relative">
+              {/* Center stem down to split */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-3 bg-[var(--line)]" />
+              {/* Horizontal bar */}
+              <div className="absolute top-3 left-[25%] right-[25%] h-[2px] bg-[var(--line)]" />
+              {/* Left drop stem */}
+              <div className="absolute top-3 left-[25%] w-[2px] h-3 bg-[var(--line)]" />
+              {/* Right drop stem */}
+              <div className="absolute top-3 right-[25%] w-[2px] h-3 bg-[var(--line)]" />
+            </div>
+
+            {/* Dual Column Layout: Core Wings (Left) vs Game Wing (Right) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mt-2 md:mt-0">
+              {/* Left Column: Core Wings / Departments */}
+              <div className="flex flex-col items-center">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 mb-4 rounded-full border border-[var(--c-yellow)]/30 bg-[var(--c-yellow)]/10 text-[var(--c-yellow)] text-xs lb-mono font-bold uppercase tracking-wider">
+                  <span>● CORE WINGS</span>
+                </div>
+
+                <div className="w-full space-y-2.5">
+                  {CORE_WING_NAMES.map((deptName) => {
+                    const leads = getDeptLeads(deptName);
+                    return (
+                      <button
+                        key={deptName}
+                        type="button"
+                        onClick={() => handleScrollToDept(deptName)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-full border border-[var(--line)] bg-[var(--surface-0)] hover:bg-[var(--surface-2)] hover:border-[var(--c-yellow)] transition-all group shadow-sm text-left hover:scale-[1.01] cursor-pointer"
+                        title={`View ${deptName}`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <span className="w-2 h-2 rounded-full bg-[var(--c-yellow)] group-hover:shadow-[0_0_8px_var(--c-yellow)] shrink-0 transition-all" />
+                          <span className="text-xs sm:text-sm font-bold text-white group-hover:text-[var(--c-yellow)] truncate transition-colors">
+                            {deptName}
+                          </span>
+                        </div>
+                        <div className="flex items-center shrink-0">
+                          {leads.map((l, idx) => (
+                            <img
+                              key={l.id || idx}
+                              src={l.imageUrl}
+                              alt={l.name}
+                              title={l.name}
+                              className="w-7 h-7 rounded-full border border-[var(--surface-0)] object-cover -ml-2 first:ml-0 shadow-sm"
+                            />
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Game Wing / Titles */}
+              <div className="flex flex-col items-center">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 mb-4 rounded-full border border-[var(--c-green)]/30 bg-[var(--c-green)]/10 text-[var(--c-green)] text-xs lb-mono font-bold uppercase tracking-wider">
+                  <span>● GAME WINGS</span>
+                </div>
+
+                <div className="w-full space-y-2.5">
+                  {GAME_WING_NAMES.map((deptName) => {
+                    const leads = getDeptLeads(deptName);
+                    return (
+                      <button
+                        key={deptName}
+                        type="button"
+                        onClick={() => handleScrollToDept(deptName)}
+                        className="w-full flex items-center justify-between px-4 py-2.5 rounded-full border border-[var(--line)] bg-[var(--surface-0)] hover:bg-[var(--surface-2)] hover:border-[var(--c-green)] transition-all group shadow-sm text-left hover:scale-[1.01] cursor-pointer"
+                        title={`View ${deptName}`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <span className="w-2 h-2 rounded-full bg-[var(--c-green)] group-hover:shadow-[0_0_8px_var(--c-green)] shrink-0 transition-all" />
+                          <span className="text-xs sm:text-sm font-bold text-white group-hover:text-[var(--c-green)] truncate transition-colors">
+                            {deptName}
+                          </span>
+                        </div>
+                        <div className="flex items-center shrink-0">
+                          {leads.map((l, idx) => (
+                            <img
+                              key={l.id || idx}
+                              src={l.imageUrl}
+                              alt={l.name}
+                              title={l.name}
+                              className="w-7 h-7 rounded-full border border-[var(--surface-0)] object-cover -ml-2 first:ml-0 shadow-sm"
+                            />
+                          ))}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -395,10 +600,11 @@ export default function TeamPage() {
         <div className="space-y-14">
           {/* ======================================================== */}
           {/* 1. COUNCIL SECTION (TOP HIERARCHY LEVEL) */}
+          {/* Strict single-row 4-column layout on desktop */}
           {/* ======================================================== */}
           {showCouncil && (
-            <section className="lb-modules" style={{ paddingBottom: 0 }}>
-              <div className="lb-sect-head border-b border-[var(--c-yellow)]/40 pb-3 mb-6">
+            <section id="the-council" className="lb-modules scroll-mt-24" style={{ paddingBottom: 0 }}>
+              <div className="lb-sect-head border-b border-[var(--c-yellow)]/40 pb-2.5 mb-4">
                 <div>
                   <div className="lb-kicker text-[var(--c-yellow)] flex items-center gap-1.5">
                     <Crown className="h-3.5 w-3.5" />
@@ -407,12 +613,12 @@ export default function TeamPage() {
                   <h2 className="lb-section-title">THE COUNCIL</h2>
                 </div>
                 <div className="lb-kicker-right text-[var(--c-yellow)] font-bold">
-                  GOVERNING BODY
+                  GOVERNING BODY · 4 OFFICERS
                 </div>
               </div>
 
-              {/* Council Grid: 4 Prominent Spotlight Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {/* Council Grid: 4 Officers strictly in a single row on desktop */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {councilList.map((councilMember, idx) => (
                   <MemberCard key={councilMember.id} member={councilMember} index={idx} />
                 ))}
@@ -422,13 +628,17 @@ export default function TeamPage() {
 
           {/* ======================================================== */}
           {/* 2. DEPARTMENTS & WINGS */}
+          {/* Row 1: Head & Co-Head */}
+          {/* Row 2: Remaining Squad Members */}
           {/* ======================================================== */}
           {groupedDepartments.map(({ department, members }) => {
-            const headMember = members.find((m) => m.tier === 'HEAD');
+            const leaders = members.filter((m) => m.tier === 'HEAD' || m.tier === 'CO_HEAD');
+            const otherMembers = members.filter((m) => m.tier !== 'HEAD' && m.tier !== 'CO_HEAD');
             const wingLabel = members[0]?.wing || 'Core Wing';
+            const deptAnchorId = `dept-${department.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
             return (
-              <section key={department} className="lb-modules" style={{ paddingBottom: 0 }}>
+              <section key={department} id={deptAnchorId} className="lb-modules scroll-mt-24" style={{ paddingBottom: 0 }}>
                 {/* Department Header */}
                 <div className="lb-sect-head border-b border-[var(--line)] pb-3 mb-6">
                   <div>
@@ -438,15 +648,44 @@ export default function TeamPage() {
                     <h2 className="lb-section-title">{department.toUpperCase()}</h2>
                   </div>
                   <div className="lb-kicker-right">
-                    {headMember?.name ? `LEAD: ${headMember.name}` : department}
+                    {leaders.length > 0
+                      ? `LEAD: ${leaders.map((l) => l.name).join(' & ')}`
+                      : department}
                   </div>
                 </div>
 
-                {/* Unified Council-Style Grid for All Department Members */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  {members.map((member, idx) => (
-                    <MemberCard key={member.id} member={member} index={idx} />
-                  ))}
+                <div className="space-y-4">
+                  {/* Row 1: Leadership (Head and Co-Head together) */}
+                  {leaders.length > 0 && (
+                    <div>
+                      <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--c-yellow)] mb-2 flex items-center gap-1.5 font-bold">
+                        <Crown className="h-3 w-3" />
+                        <span>// LEADERSHIP (HEAD &amp; CO-HEAD)</span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {leaders.map((leader, lIdx) => (
+                          <MemberCard key={leader.id} member={leader} index={lIdx} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Row 2: Remaining Team Members */}
+                  {otherMembers.length > 0 && (
+                    <div>
+                      {leaders.length > 0 && (
+                        <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--fg-dim)] mb-2 flex items-center gap-1.5 font-bold">
+                          <Users className="h-3 w-3" />
+                          <span>// TEAM SQUAD</span>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {otherMembers.map((member, mIdx) => (
+                          <MemberCard key={member.id} member={member} index={mIdx + leaders.length} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </section>
             );
@@ -458,8 +697,7 @@ export default function TeamPage() {
 }
 
 /**
- * Unified Council-Style Member Card
- * Renders Council officers, Department Leads, and Team Volunteers with a cohesive layout
+ * Unified Council-Style Member Card (Compact layout designed so two rows fit in one viewport)
  */
 function MemberCard({ member, index }: { member: ExtendedTeamMember; index: number }) {
   const isCouncil = member.wing === 'Council';
@@ -505,21 +743,21 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.25) }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.2) }}
       className={`relative group border ${
         isHead || isCouncil || isCoHead
-          ? `border-[var(--c-${accent})]`
+          ? `border-[var(--c-${accent})] shadow-[0_0_14px_rgba(201,160,46,0.12)]`
           : 'border-[var(--line)] hover:border-white/30'
-      } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
+      } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-3 flex flex-col justify-between transition-all`}
     >
       <div>
-        {/* Avatar with Cyber Brackets */}
+        {/* Compact Avatar */}
         <div
-          className={`relative w-full aspect-square border-2 ${
+          className={`relative w-full h-36 sm:h-40 border-2 ${
             isHead || isCouncil || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
-          } bg-[var(--surface-0)] overflow-hidden mb-4`}
+          } bg-[var(--surface-0)] overflow-hidden mb-2.5`}
         >
           {member.imageUrl ? (
             <img
@@ -529,7 +767,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
             />
           ) : (
             <div
-              className={`w-full h-full flex items-center justify-center font-display text-5xl text-[var(--c-${accent})]`}
+              className={`w-full h-full flex items-center justify-center font-display text-4xl text-[var(--c-${accent})]`}
             >
               {initial}
             </div>
@@ -538,7 +776,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
           {/* Tier Badge: Only shown if member has leadership/council role */}
           {badgeLabel && (
             <div
-              className={`absolute top-2 right-2 bg-black/85 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[10px] font-bold px-2 py-0.5 lb-mono`}
+              className={`absolute top-1.5 right-1.5 bg-black/90 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[9px] font-bold px-1.5 py-0.5 lb-mono tracking-wider`}
             >
               {badgeLabel}
             </div>
@@ -546,41 +784,37 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
         </div>
 
         {/* Member Meta */}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {kickerLabel && (
             <div
-              className={`text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold`}
+              className={`text-[9px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold truncate`}
             >
               {kickerLabel}
             </div>
           )}
           <h3
-            className={`text-lg font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
+            className={`text-sm sm:text-base font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
+            title={member.name}
           >
             {member.name}
           </h3>
-          <p className="text-xs lb-mono text-[var(--fg-dim)] uppercase">
+          <p className="text-[11px] lb-mono text-[var(--fg-dim)] uppercase truncate">
             {member.role}
           </p>
-          {member.bio && (
-            <p className="text-xs text-[var(--fg-mute)] line-clamp-2 leading-relaxed pt-1.5">
-              {member.bio}
-            </p>
-          )}
         </div>
       </div>
 
       {/* Card Action Link */}
-      <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between">
-        <span className="text-[10px] lb-mono text-[var(--fg-mute)]">
+      <div className="mt-2.5 pt-2 border-t border-dashed border-[var(--line)] flex items-center justify-between">
+        <span className="text-[9px] lb-mono text-[var(--fg-mute)]">
           #{member.department.toLowerCase().replace(/\s+/g, '_')}
         </span>
         <Link
           to={`/team/${slugOrId}`}
-          className={`inline-flex items-center gap-1 lb-mono text-xs font-semibold text-[var(--c-${accent})] hover:underline`}
+          className={`inline-flex items-center gap-1 lb-mono text-[11px] font-semibold text-[var(--c-${accent})] hover:underline`}
         >
           <span>DOSSIER</span>
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-2.5 w-2.5" />
         </Link>
       </div>
     </motion.div>
