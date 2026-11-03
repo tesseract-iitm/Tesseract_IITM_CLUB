@@ -10,7 +10,6 @@ import {
   X,
   Crown,
   Sparkles,
-  Users,
   ArrowRight,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -582,7 +581,6 @@ export default function TeamPage() {
           {/* ======================================================== */}
           {groupedDepartments.map(({ department, members }) => {
             const leaders = members.filter((m) => m.tier === 'HEAD' || m.tier === 'CO_HEAD');
-            const otherMembers = members.filter((m) => m.tier !== 'HEAD' && m.tier !== 'CO_HEAD');
             const wingLabel = members[0]?.wing || 'Core Wing';
             const deptAnchorId = `dept-${department.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
@@ -603,38 +601,11 @@ export default function TeamPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3.5">
-                  {/* Row 1: Leadership (Head and Co-Head together) */}
-                  {leaders.length > 0 && (
-                    <div>
-                      <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--c-yellow)] mb-1.5 flex items-center gap-1.5 font-bold">
-                        <Crown className="h-3 w-3" />
-                        <span>// LEADERSHIP (HEAD &amp; CO-HEAD)</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                        {leaders.map((leader, lIdx) => (
-                          <MemberCard key={leader.id} member={leader} index={lIdx} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Row 2: Remaining Team Members */}
-                  {otherMembers.length > 0 && (
-                    <div>
-                      {leaders.length > 0 && (
-                        <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--fg-dim)] mb-1.5 flex items-center gap-1.5 font-bold">
-                          <Users className="h-3 w-3" />
-                          <span>// TEAM SQUAD</span>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                        {otherMembers.map((member, mIdx) => (
-                          <MemberCard key={member.id} member={member} index={mIdx + leaders.length} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                {/* All members of the particular team in the same unified row */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                  {members.map((member, idx) => (
+                    <MemberCard key={member.id} member={member} index={idx} />
+                  ))}
                 </div>
               </section>
             );
