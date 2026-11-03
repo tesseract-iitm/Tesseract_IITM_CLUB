@@ -129,13 +129,14 @@ export default function TeamPage() {
       map.get(dept)!.push(m);
     });
 
-    // Ensure within each department: HEAD first, then VOLUNTEERS
+    // Ensure within each department: HEAD first, then CO_HEAD, then other members
     const result: Array<{ department: string; members: ExtendedTeamMember[] }> = [];
     map.forEach((members, department) => {
       const sorted = [...members].sort((a, b) => {
         const tierRank = (tier: TeamHierarchyTier) => {
           if (tier === 'HEAD') return 1;
-          return 2;
+          if (tier === 'CO_HEAD') return 2;
+          return 3;
         };
         return tierRank(a.tier) - tierRank(b.tier) || (a.order ?? 99) - (b.order ?? 99);
       });
@@ -463,6 +464,7 @@ export default function TeamPage() {
 function MemberCard({ member, index }: { member: ExtendedTeamMember; index: number }) {
   const isCouncil = member.wing === 'Council';
   const isHead = member.tier === 'HEAD';
+  const isCoHead = member.tier === 'CO_HEAD';
 
   // Determine accent color
   let accent: Accent;
@@ -470,6 +472,8 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
     accent = index === 0 ? 'yellow' : index === 1 ? 'purple' : 'blue';
   } else if (isHead) {
     accent = 'yellow';
+  } else if (isCoHead) {
+    accent = 'blue';
   } else {
     accent = TEAM_ACCENTS[index % TEAM_ACCENTS.length];
   }
@@ -477,19 +481,27 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
   const slugOrId = member.slug || member.id;
   const initial = member.name?.charAt(0)?.toUpperCase() || '?';
 
-  // Badge label
-  const badgeLabel = isCouncil
-    ? member.role.toUpperCase()
-    : isHead
-    ? 'HEAD'
-    : 'VOLUNTEER';
+  // Badge label: Only for Council, Head, and Co-Head (no volunteer badges)
+  let badgeLabel: string | null = null;
+  if (isCouncil) {
+    badgeLabel = member.role.toUpperCase();
+  } else if (isHead) {
+    badgeLabel = 'HEAD';
+  } else if (isCoHead) {
+    badgeLabel = 'CO-HEAD';
+  }
 
-  // Kicker label
-  const kickerLabel = isCouncil
-    ? 'COUNCIL OFFICER'
-    : isHead
-    ? 'DEPARTMENT LEAD'
-    : 'TEAM MEMBER';
+  // Kicker label: Clean labels, no 'VOLUNTEER' tags
+  let kickerLabel: string | null = null;
+  if (isCouncil) {
+    kickerLabel = 'COUNCIL OFFICER';
+  } else if (isHead) {
+    kickerLabel = 'DEPARTMENT LEAD';
+  } else if (isCoHead) {
+    kickerLabel = 'CO-HEAD';
+  } else {
+    kickerLabel = `#${member.department.toUpperCase().replace(/\s+/g, '_')}`;
+  }
 
   return (
     <motion.div
@@ -497,7 +509,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.25) }}
       className={`relative group border ${
-        isHead || isCouncil
+        isHead || isCouncil || isCoHead
           ? `border-[var(--c-${accent})]`
           : 'border-[var(--line)] hover:border-white/30'
       } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
@@ -506,7 +518,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
         {/* Avatar with Cyber Brackets */}
         <div
           className={`relative w-full aspect-square border-2 ${
-            isHead || isCouncil ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
+            isHead || isCouncil || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
           } bg-[var(--surface-0)] overflow-hidden mb-4`}
         >
           {member.imageUrl ? (
@@ -523,25 +535,25 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
             </div>
           )}
 
-          {/* Tier Badge */}
-          <div
-            className={`absolute top-2 right-2 ${
-              isHead || isCouncil
-                ? `bg-black/85 border border-[var(--c-${accent})] text-[var(--c-${accent})]`
-                : 'bg-black/80 border border-white/20 text-white'
-            } text-[10px] font-bold px-2 py-0.5 lb-mono`}
-          >
-            {badgeLabel}
-          </div>
+          {/* Tier Badge: Only shown if member has leadership/council role */}
+          {badgeLabel && (
+            <div
+              className={`absolute top-2 right-2 bg-black/85 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[10px] font-bold px-2 py-0.5 lb-mono`}
+            >
+              {badgeLabel}
+            </div>
+          )}
         </div>
 
         {/* Member Meta */}
         <div className="space-y-1">
-          <div
-            className={`text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold`}
-          >
-            {kickerLabel}
-          </div>
+          {kickerLabel && (
+            <div
+              className={`text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold`}
+            >
+              {kickerLabel}
+            </div>
+          )}
           <h3
             className={`text-lg font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
           >

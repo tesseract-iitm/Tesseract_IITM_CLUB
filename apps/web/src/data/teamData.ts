@@ -1,6 +1,6 @@
 import type { TeamMember } from '@/lib/api';
 
-export type TeamHierarchyTier = 'COUNCIL' | 'HEAD' | 'VOLUNTEER';
+export type TeamHierarchyTier = 'COUNCIL' | 'HEAD' | 'CO_HEAD' | 'VOLUNTEER';
 
 export interface ExtendedTeamMember extends TeamMember {
   tier: TeamHierarchyTier;
@@ -117,22 +117,22 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'webops-2',
     name: 'Vaibhav Nargwani',
-    role: 'Webops Volunteer',
+    role: 'Co-Head of Webops',
     team: 'Webops',
     department: 'Webops',
-    tier: 'VOLUNTEER',
+    tier: 'CO_HEAD',
     wing: 'Core Wing',
     slug: 'vaibhav-nargwani',
     order: 11,
     imageUrl: getAvatar(5),
-    bio: 'Contributing to frontend development, interface polish, and interactive gaming experiences.',
+    bio: 'Co-leading frontend development, interface polish, and interactive gaming experiences.',
     expertise: 'React 19, TypeScript, UI/UX Engineering, Design Tokens',
     github: 'https://github.com',
   },
   {
     id: 'webops-3',
     name: 'Shivam Shukla',
-    role: 'Webops Volunteer',
+    role: 'Webops Team',
     team: 'Webops',
     department: 'Webops',
     tier: 'VOLUNTEER',
@@ -147,7 +147,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'webops-4',
     name: 'Jayanta Ghosh',
-    role: 'Webops Volunteer',
+    role: 'Webops Team',
     team: 'Webops',
     department: 'Webops',
     tier: 'VOLUNTEER',
@@ -178,7 +178,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'design-2',
     name: 'Rupakshi',
-    role: 'Graphic Design Volunteer',
+    role: 'Graphic Design Team',
     team: 'Graphic Design',
     department: 'Graphic Design',
     tier: 'VOLUNTEER',
@@ -192,7 +192,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'design-3',
     name: 'Shweta G',
-    role: 'Graphic Design Volunteer',
+    role: 'Graphic Design Team',
     team: 'Graphic Design',
     department: 'Graphic Design',
     tier: 'VOLUNTEER',
@@ -206,7 +206,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'design-4',
     name: 'Vidhi Agrawal',
-    role: 'Graphic Design Volunteer',
+    role: 'Graphic Design Team',
     team: 'Graphic Design',
     department: 'Graphic Design',
     tier: 'VOLUNTEER',
@@ -236,7 +236,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'video-2',
     name: 'Yashwant',
-    role: 'Video Editing Volunteer',
+    role: 'Video Editing Team',
     team: 'Video Editing',
     department: 'Video Editing',
     tier: 'VOLUNTEER',
@@ -266,7 +266,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'sponsor-2',
     name: 'Aman Pandey',
-    role: 'Sponsorship & Research Volunteer',
+    role: 'Sponsorship & Research Team',
     team: 'Sponsorship & Research',
     department: 'Sponsorship & Research',
     tier: 'VOLUNTEER',
@@ -280,7 +280,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'sponsor-3',
     name: 'Prithvi Raj',
-    role: 'Sponsorship & Research Volunteer',
+    role: 'Sponsorship & Research Team',
     team: 'Sponsorship & Research',
     department: 'Sponsorship & Research',
     tier: 'VOLUNTEER',
@@ -294,7 +294,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'sponsor-4',
     name: 'N R Paghalavan',
-    role: 'Sponsorship & Research Volunteer',
+    role: 'Sponsorship & Research Team',
     team: 'Sponsorship & Research',
     department: 'Sponsorship & Research',
     tier: 'VOLUNTEER',
@@ -324,7 +324,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'pr-2',
     name: 'Shivam Jaiswal',
-    role: 'PR & Outreach Volunteer',
+    role: 'PR & Outreach Team',
     team: 'PR & Outreach',
     department: 'PR & Outreach',
     tier: 'VOLUNTEER',
@@ -338,7 +338,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'pr-3',
     name: 'Priya Routh',
-    role: 'PR & Outreach Volunteer',
+    role: 'PR & Outreach Team',
     team: 'PR & Outreach',
     department: 'PR & Outreach',
     tier: 'VOLUNTEER',
@@ -368,7 +368,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'stream-2',
     name: 'Shahzamaan Qadir',
-    role: 'Streamer & Caster Volunteer',
+    role: 'Streamer & Caster Team',
     team: 'Streamer & Caster',
     department: 'Streamer & Caster',
     tier: 'VOLUNTEER',
@@ -382,7 +382,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'stream-3',
     name: 'Simrat Singh',
-    role: 'Streamer & Caster Volunteer',
+    role: 'Streamer & Caster Team',
     team: 'Streamer & Caster',
     department: 'Streamer & Caster',
     tier: 'VOLUNTEER',
@@ -412,7 +412,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'gamedev-2',
     name: 'Vanshaj Jagatramka',
-    role: 'Game-Dev Volunteer',
+    role: 'Game-Dev Team',
     team: 'Game-Dev',
     department: 'Game-Dev',
     tier: 'VOLUNTEER',
@@ -442,7 +442,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-2',
     name: 'Diksha Shinde',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -456,7 +456,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-3',
     name: 'Aarya Karekar',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -470,7 +470,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-4',
     name: 'Surya Nikunj Krishna',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -484,7 +484,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-5',
     name: 'Gayatri Sachin Khatkale',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -498,7 +498,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-6',
     name: 'Bindhu Aashritha V',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -512,7 +512,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'escape-7',
     name: 'Dipesh Yadav',
-    role: 'Escape Wing Volunteer',
+    role: 'Escape Wing Team',
     team: 'Escape Wing',
     department: 'Escape Wing',
     tier: 'VOLUNTEER',
@@ -546,7 +546,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'bgmi-2',
     name: 'Shahzamaan Qadir',
-    role: 'BGMI Volunteer',
+    role: 'BGMI Team',
     team: 'BGMI',
     department: 'BGMI',
     tier: 'VOLUNTEER',
@@ -560,7 +560,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'bgmi-3',
     name: 'Himanshu Sharma',
-    role: 'BGMI Volunteer',
+    role: 'BGMI Team',
     team: 'BGMI',
     department: 'BGMI',
     tier: 'VOLUNTEER',
@@ -574,7 +574,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'bgmi-4',
     name: 'Priyanshu Dari',
-    role: 'BGMI Volunteer',
+    role: 'BGMI Team',
     team: 'BGMI',
     department: 'BGMI',
     tier: 'VOLUNTEER',
@@ -588,7 +588,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'bgmi-5',
     name: 'Devansh Mishra',
-    role: 'BGMI Volunteer',
+    role: 'BGMI Team',
     team: 'BGMI',
     department: 'BGMI',
     tier: 'VOLUNTEER',
@@ -602,7 +602,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'bgmi-6',
     name: 'Akarsh',
-    role: 'BGMI Volunteer',
+    role: 'BGMI Team',
     team: 'BGMI',
     department: 'BGMI',
     tier: 'VOLUNTEER',
@@ -632,7 +632,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'ff-2',
     name: 'Ayush Sharma',
-    role: 'Free Fire Volunteer',
+    role: 'Free Fire Team',
     team: 'Free Fire',
     department: 'Free Fire',
     tier: 'VOLUNTEER',
@@ -646,7 +646,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'ff-3',
     name: 'Raj Bamne',
-    role: 'Free Fire Volunteer',
+    role: 'Free Fire Team',
     team: 'Free Fire',
     department: 'Free Fire',
     tier: 'VOLUNTEER',
@@ -660,7 +660,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'ff-4',
     name: 'Shivsharan Singh',
-    role: 'Free Fire Volunteer',
+    role: 'Free Fire Team',
     team: 'Free Fire',
     department: 'Free Fire',
     tier: 'VOLUNTEER',
@@ -674,7 +674,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'ff-5',
     name: 'Shivam',
-    role: 'Free Fire Volunteer',
+    role: 'Free Fire Team',
     team: 'Free Fire',
     department: 'Free Fire',
     tier: 'VOLUNTEER',
@@ -688,7 +688,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'ff-6',
     name: 'Harshwardhan Telange',
-    role: 'Free Fire Volunteer',
+    role: 'Free Fire Team',
     team: 'Free Fire',
     department: 'Free Fire',
     tier: 'VOLUNTEER',
@@ -718,7 +718,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'coc-2',
     name: 'Lavish Sagar',
-    role: 'Clash of Clans Volunteer',
+    role: 'Clash of Clans Team',
     team: 'Clash of Clans',
     department: 'Clash of Clans',
     tier: 'VOLUNTEER',
@@ -732,7 +732,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'coc-3',
     name: 'Unnati Sharma',
-    role: 'Clash of Clans Volunteer',
+    role: 'Clash of Clans Team',
     team: 'Clash of Clans',
     department: 'Clash of Clans',
     tier: 'VOLUNTEER',
@@ -746,7 +746,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'coc-4',
     name: 'Ajish Priyan K',
-    role: 'Clash of Clans Volunteer',
+    role: 'Clash of Clans Team',
     team: 'Clash of Clans',
     department: 'Clash of Clans',
     tier: 'VOLUNTEER',
@@ -776,7 +776,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'casual-2',
     name: 'Harsh Kumar',
-    role: 'Casual Games Volunteer',
+    role: 'Casual Games Team',
     team: 'Casual Games',
     department: 'Casual Games',
     tier: 'VOLUNTEER',
@@ -790,7 +790,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'casual-3',
     name: 'Prashant Dhavane',
-    role: 'Casual Games Volunteer',
+    role: 'Casual Games Team',
     team: 'Casual Games',
     department: 'Casual Games',
     tier: 'VOLUNTEER',
@@ -820,7 +820,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'val-2',
     name: 'Jatin Kumar',
-    role: 'Valorant Volunteer',
+    role: 'Valorant Team',
     team: 'Valorant',
     department: 'Valorant',
     tier: 'VOLUNTEER',
@@ -850,7 +850,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'codm-2',
     name: 'Kuldeep Gour',
-    role: 'CODM Volunteer',
+    role: 'CODM Team',
     team: 'CODM',
     department: 'CODM',
     tier: 'VOLUNTEER',
@@ -880,7 +880,7 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'mc-2',
     name: 'Manish Chouhan',
-    role: 'Minecraft Volunteer',
+    role: 'Minecraft Team',
     team: 'Minecraft',
     department: 'Minecraft',
     tier: 'VOLUNTEER',
