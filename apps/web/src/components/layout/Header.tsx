@@ -14,9 +14,10 @@ type NavItem = { label: string; href: string; static?: boolean; aliases?: string
 const NAV_ITEMS: NavItem[] = [
   { label: '[01] games',  href: '/games' },
   { label: '[02] events', href: '/events' },
-  { label: '[03] team',   href: '/members', aliases: ['/team'] },
-  { label: '[04] about',  href: '/about' },
-  { label: '[05] recruitment', href: '/recruitment', static: true },
+  { label: '[03] quiz',   href: '/quiz', aliases: ['/quizzes'] },
+  { label: '[04] team',   href: '/members', aliases: ['/team'] },
+  { label: '[05] about',  href: '/about' },
+  { label: '[06] recruitment', href: '/recruitment', static: true },
 ];
 
 export function Header() {

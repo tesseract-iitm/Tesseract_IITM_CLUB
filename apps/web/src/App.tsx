@@ -106,6 +106,7 @@ const HomePage               = lazy(() => import('@/pages/HomePage'));
 const AboutPage              = lazy(() => import('@/pages/AboutPage'));
 const EventsPage             = lazy(() => import('@/pages/EventsPage'));
 const EventDetailPage        = lazy(() => import('@/pages/EventDetailPage'));
+const QuizPage               = lazy(() => import('@/pages/QuizPage'));
 const TeamPage               = lazy(() => import('@/pages/TeamPage'));
 const TeamMemberProfilePage  = lazy(() => import('@/pages/TeamMemberProfilePage'));
 const AchievementsPage       = lazy(() => import('@/pages/AchievementsPage'));
@@ -192,6 +193,8 @@ function App() {
                 <Route path="/about"         element={wrap(<AboutPage />)} />
                 <Route path="/events"        element={wrap(<EventsPage />)} />
                 <Route path="/events/:id"    element={wrap(<EventDetailPage />)} />
+                <Route path="/quiz"          element={wrap(<QuizPage />)} />
+                <Route path="/quizzes"       element={wrap(<QuizPage />)} />
                 <Route path="/announcements"     element={wrap(<AnnouncementsPage />)} />
                 <Route path="/announcements/:id" element={wrap(<AnnouncementDetailPage />)} />
                 <Route path="/team"          element={wrap(<TeamPage />)} />
