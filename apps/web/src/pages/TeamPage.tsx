@@ -835,9 +835,9 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
       } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-3 flex flex-col justify-between transition-all`}
     >
       <div>
-        {/* Compact Avatar */}
+        {/* 1:1 Orientation Avatar */}
         <div
-          className={`relative w-full h-36 sm:h-40 border-2 ${
+          className={`relative w-full aspect-square border-2 ${
             isHead || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
           } bg-[var(--surface-0)] overflow-hidden mb-2.5`}
         >
