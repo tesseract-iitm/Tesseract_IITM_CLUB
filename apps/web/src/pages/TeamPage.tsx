@@ -604,7 +604,7 @@ export default function TeamPage() {
           {/* ======================================================== */}
           {showCouncil && (
             <section id="the-council" className="lb-modules scroll-mt-24" style={{ paddingBottom: 0 }}>
-              <div className="lb-sect-head border-b border-[var(--c-yellow)]/40 pb-2.5 mb-4">
+              <div className="lb-sect-head border-b border-[var(--c-yellow)]/40 pb-3 mb-6">
                 <div>
                   <div className="lb-kicker text-[var(--c-yellow)] flex items-center gap-1.5">
                     <Crown className="h-3.5 w-3.5" />
@@ -617,8 +617,8 @@ export default function TeamPage() {
                 </div>
               </div>
 
-              {/* Council Grid: 4 Officers strictly in a single row on desktop */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Council Grid: 4 Prominent Spotlight Cards in the SAME ROW on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {councilList.map((councilMember, idx) => (
                   <MemberCard key={councilMember.id} member={councilMember} index={idx} />
                 ))}
@@ -697,7 +697,9 @@ export default function TeamPage() {
 }
 
 /**
- * Unified Council-Style Member Card (Compact layout designed so two rows fit in one viewport)
+ * Unified Council-Style Member Card
+ * Council members retain full-size prominent cards with aspect-square and bio.
+ * Department members use compact cards so two rows fit in one screen view.
  */
 function MemberCard({ member, index }: { member: ExtendedTeamMember; index: number }) {
   const isCouncil = member.wing === 'Council';
@@ -741,13 +743,93 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
     kickerLabel = `#${member.department.toUpperCase().replace(/\s+/g, '_')}`;
   }
 
+  // COUNCIL CARDS: Original full-size prominent spotlight layout
+  if (isCouncil) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.25) }}
+        className={`relative group border border-[var(--c-${accent})] shadow-[0_0_16px_rgba(201,160,46,0.15)] bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
+      >
+        <div>
+          {/* Full-Size Aspect-Square Avatar */}
+          <div
+            className={`relative w-full aspect-square border-2 border-[var(--c-${accent})] bg-[var(--surface-0)] overflow-hidden mb-4`}
+          >
+            {member.imageUrl ? (
+              <img
+                src={member.imageUrl}
+                alt={member.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <div
+                className={`w-full h-full flex items-center justify-center font-display text-5xl text-[var(--c-${accent})]`}
+              >
+                {initial}
+              </div>
+            )}
+
+            {badgeLabel && (
+              <div
+                className={`absolute top-2 right-2 bg-black/85 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[10px] font-bold px-2 py-0.5 lb-mono`}
+              >
+                {badgeLabel}
+              </div>
+            )}
+          </div>
+
+          {/* Member Meta */}
+          <div className="space-y-1">
+            {kickerLabel && (
+              <div
+                className={`text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold`}
+              >
+                {kickerLabel}
+              </div>
+            )}
+            <h3
+              className={`text-lg font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
+            >
+              {member.name}
+            </h3>
+            <p className="text-xs lb-mono text-[var(--fg-dim)] uppercase">
+              {member.role}
+            </p>
+            {member.bio && (
+              <p className="text-xs text-[var(--fg-mute)] line-clamp-2 leading-relaxed pt-1.5">
+                {member.bio}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Card Action Link */}
+        <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between">
+          <span className="text-[10px] lb-mono text-[var(--fg-mute)]">
+            #{member.department.toLowerCase().replace(/\s+/g, '_')}
+          </span>
+          <Link
+            to={`/team/${slugOrId}`}
+            className={`inline-flex items-center gap-1 lb-mono text-xs font-semibold text-[var(--c-${accent})] hover:underline`}
+          >
+            <span>DOSSIER</span>
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // DEPARTMENT CARDS: Compact layout so two rows fit in one viewport
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.2) }}
       className={`relative group border ${
-        isHead || isCouncil || isCoHead
+        isHead || isCoHead
           ? `border-[var(--c-${accent})] shadow-[0_0_14px_rgba(201,160,46,0.12)]`
           : 'border-[var(--line)] hover:border-white/30'
       } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-3 flex flex-col justify-between transition-all`}
@@ -756,7 +838,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
         {/* Compact Avatar */}
         <div
           className={`relative w-full h-36 sm:h-40 border-2 ${
-            isHead || isCouncil || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
+            isHead || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
           } bg-[var(--surface-0)] overflow-hidden mb-2.5`}
         >
           {member.imageUrl ? (
@@ -773,7 +855,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
             </div>
           )}
 
-          {/* Tier Badge: Only shown if member has leadership/council role */}
+          {/* Tier Badge: Only shown if member has leadership role */}
           {badgeLabel && (
             <div
               className={`absolute top-1.5 right-1.5 bg-black/90 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[9px] font-bold px-1.5 py-0.5 lb-mono tracking-wider`}
