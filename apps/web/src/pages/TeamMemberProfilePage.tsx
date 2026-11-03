@@ -193,7 +193,7 @@ export default function TeamMemberProfilePage() {
       ]} />
 
       {/* Hero */}
-      <section className="lb-hero">
+      <section className="lb-hero profile-hero">
         <div className="lb-hero-left">
           <Link to="/team" className="lb-mono text-xs mb-4 inline-flex items-center gap-2" style={{ color: 'var(--fg-mute)', letterSpacing: '0.1em' }}>
             <ArrowLeft className="h-3 w-3" /> // back_to_crew
@@ -242,7 +242,7 @@ export default function TeamMemberProfilePage() {
         <div className="lb-hero-right">
           <div
             className="lb-hatch lb-c-yellow"
-            style={{ width: 320, height: 320, position: 'relative' }}
+            style={{ width: 280, height: 280, position: 'relative' }}
           >
             {member.imageUrl ? (
               <img
@@ -259,7 +259,7 @@ export default function TeamMemberProfilePage() {
 
       {/* Content sections */}
       {sections.length > 0 && (
-        <section className="lb-modules">
+        <section className="lb-modules profile-modules">
           <div className="lb-sect-head">
             <div>
               <div className="lb-kicker">// dossier</div>
@@ -286,7 +286,7 @@ export default function TeamMemberProfilePage() {
 
       {/* Credits */}
       {memberCredits.length > 0 && (
-        <section className="lb-board-section">
+        <section className="lb-board-section profile-board">
           <Brackets tag="credits.contribution" accent="orange">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lb-mono text-xs">
               {memberCredits.map((c) => (

@@ -1160,6 +1160,44 @@
   @media (max-width: 960px) {
     .lb-hero-right { min-height: 380px; }
   }
+
+  /* ---- Profile specific hero and modules (compact middle gap) ---- */
+  .profile-hero {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 40px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 36px 40px 16px !important;
+    align-items: center !important;
+  }
+  .profile-hero .lb-hero-right {
+    min-height: auto !important;
+    align-self: center !important;
+    justify-content: flex-end !important;
+  }
+  @media (max-width: 960px) {
+    .profile-hero {
+      grid-template-columns: 1fr !important;
+      padding: 24px 20px 16px !important;
+      gap: 24px !important;
+    }
+    .profile-hero .lb-hero-right {
+      justify-content: center !important;
+    }
+  }
+
+  .profile-modules {
+    padding-top: 12px !important;
+    padding-bottom: 24px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  .profile-board {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding-top: 0 !important;
+    padding-bottom: 32px !important;
+  }
   .lb-hero-label {
     font-size: 12px;
     color: var(--c-green);
