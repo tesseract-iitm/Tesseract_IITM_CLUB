@@ -164,15 +164,15 @@ export const TESSERACT_TEAM_MEMBERS: ExtendedTeamMember[] = [
   {
     id: 'design-1',
     name: 'Taiyaba Hashmi',
-    role: 'Head of Graphic Design',
+    role: 'Graphic Design Team',
     team: 'Graphic Design',
     department: 'Graphic Design',
-    tier: 'HEAD',
+    tier: 'VOLUNTEER',
     wing: 'Core Wing',
     slug: 'taiyaba-hashmi',
     order: 20,
     imageUrl: getAvatar(8),
-    bio: 'Leading creative design, visual brand identity, and tournament branding across all media channels.',
+    bio: 'Creative design, visual brand identity, and tournament branding across all media channels.',
     expertise: 'Brand Identity, Creative Direction, Digital Illustration, UI Design',
   },
   {
