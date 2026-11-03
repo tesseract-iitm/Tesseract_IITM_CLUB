@@ -9,11 +9,8 @@ import {
   Search,
   X,
   Crown,
-  Shield,
   Sparkles,
   Users,
-  Gamepad2,
-  Cpu,
   ArrowRight,
 } from 'lucide-react';
 import { api } from '@/lib/api';
@@ -237,67 +234,11 @@ export default function TeamPage() {
         ]}
       />
 
-      {/* Hero Header */}
-      <section className="lb-hero" style={{ paddingBottom: 28 }}>
-        <div className="lb-hero-left" style={{ minWidth: 0, maxWidth: 860 }}>
-          <div className="inline-flex items-center gap-2 lb-mono text-xs uppercase px-2.5 py-1 mb-4 border border-[var(--c-yellow-soft)] text-[var(--c-yellow)] bg-[rgba(201,160,46,0.08)]">
-            <Crown className="h-3.5 w-3.5 text-[var(--c-yellow)]" />
-            <span>// THE.SQUADRON · HIERARCHY &amp; ROSTER</span>
-          </div>
-
-          <h1 className="lb-headline">
-            <span className="lb-h-line">OFFICIAL</span>
-            <span className="lb-h-line lb-h-accent">TEAM DIRECTORY.</span>
-          </h1>
-
-          <p className="lb-sub" style={{ maxWidth: 700, marginTop: 12 }}>
-            The autonomous student-led body of Tesseract Esports Society at IIT Madras BS — governing
-            championship tournaments, developing web applications, and directing competitive game wings.
-          </p>
-
-          {/* Quick Metrics */}
-          <div className="flex flex-wrap gap-2.5 mt-6 items-center">
-            <div className="inline-flex items-center gap-2 lb-mono text-xs px-3 py-1.5 border border-[var(--line)] bg-[var(--surface-1)] text-[var(--fg-dim)]">
-              <Shield className="h-3.5 w-3.5 text-[var(--c-yellow)]" />
-              <span>COUNCIL: 4 OFFICERS</span>
-            </div>
-            <div className="inline-flex items-center gap-2 lb-mono text-xs px-3 py-1.5 border border-[var(--line)] bg-[var(--surface-1)] text-[var(--fg-dim)]">
-              <Cpu className="h-3.5 w-3.5 text-[var(--c-blue)]" />
-              <span>CORE WINGS: 8 TEAMS</span>
-            </div>
-            <div className="inline-flex items-center gap-2 lb-mono text-xs px-3 py-1.5 border border-[var(--line)] bg-[var(--surface-1)] text-[var(--fg-dim)]">
-              <Gamepad2 className="h-3.5 w-3.5 text-[var(--c-green)]" />
-              <span>GAME WING: 8 TITLES</span>
-            </div>
-            <div className="inline-flex items-center gap-2 lb-mono text-xs px-3 py-1.5 border border-[var(--line)] bg-[var(--surface-1)] text-[var(--fg-dim)]">
-              <Users className="h-3.5 w-3.5 text-[var(--fg)]" />
-              <span>TOTAL CREW: {teamMembers.length} MEMBERS</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="lb-hero-right hidden lg:flex items-center justify-center" style={{ minHeight: 220 }}>
-          <div className="p-5 border border-[var(--line)] bg-[var(--surface-1)]/60 backdrop-blur-sm max-w-xs text-left">
-            <div className="lb-mono text-[11px] text-[var(--c-yellow)] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>// OPERATIONAL STRUCTURE</span>
-            </div>
-            <p className="text-xs text-[var(--fg-mute)] leading-relaxed">
-              Headed by the Executive Council (Secretary, Deputy Secretary &amp; Coordinators), each wing operates with dedicated Heads and Core Volunteers.
-            </p>
-            <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between text-[11px] lb-mono text-[var(--fg-dim)]">
-              <span>IIT MADRAS BS</span>
-              <span className="text-[var(--c-green)]">● VERIFIED</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ======================================================== */}
       {/* 01. SOCIETY ORGANOGRAM & HIERARCHY TREE */}
       {/* Inspired by Sundarbans House hierarchy visual architecture */}
       {/* ======================================================== */}
-      <section className="lb-modules" style={{ paddingTop: 0, paddingBottom: 32 }}>
+      <section className="lb-modules" style={{ paddingTop: 28, paddingBottom: 32 }}>
         <div className="border border-[var(--line)] bg-[var(--surface-1)]/70 backdrop-blur-md p-6 sm:p-8 relative overflow-hidden">
           {/* Organogram Header */}
           <div className="text-center max-w-xl mx-auto mb-8">
