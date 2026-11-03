@@ -129,14 +129,13 @@ export default function TeamPage() {
       map.get(dept)!.push(m);
     });
 
-    // Ensure within each department: HEAD first, then CO_HEAD, then VOLUNTEERS
+    // Ensure within each department: HEAD first, then VOLUNTEERS
     const result: Array<{ department: string; members: ExtendedTeamMember[] }> = [];
     map.forEach((members, department) => {
       const sorted = [...members].sort((a, b) => {
         const tierRank = (tier: TeamHierarchyTier) => {
           if (tier === 'HEAD') return 1;
-          if (tier === 'CO_HEAD') return 2;
-          return 3;
+          return 2;
         };
         return tierRank(a.tier) - tierRank(b.tier) || (a.order ?? 99) - (b.order ?? 99);
       });
@@ -219,7 +218,7 @@ export default function TeamPage() {
               <span>// OPERATIONAL STRUCTURE</span>
             </div>
             <p className="text-xs text-[var(--fg-mute)] leading-relaxed">
-              Headed by the Executive Council (Secretary, Deputy Secretary &amp; Coordinators), each wing operates with dedicated Heads, Co-Heads, and Core Volunteers.
+              Headed by the Executive Council (Secretary, Deputy Secretary &amp; Coordinators), each wing operates with dedicated Heads and Core Volunteers.
             </p>
             <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between text-[11px] lb-mono text-[var(--fg-dim)]">
               <span>IIT MADRAS BS</span>
@@ -414,19 +413,17 @@ export default function TeamPage() {
               {/* Council Grid: 4 Prominent Spotlight Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {councilList.map((councilMember, idx) => (
-                  <CouncilCard key={councilMember.id} member={councilMember} index={idx} />
+                  <MemberCard key={councilMember.id} member={councilMember} index={idx} />
                 ))}
               </div>
             </section>
           )}
 
           {/* ======================================================== */}
-          {/* 2. DEPARTMENTS & WINGS HIERARCHY */}
+          {/* 2. DEPARTMENTS & WINGS */}
           {/* ======================================================== */}
           {groupedDepartments.map(({ department, members }) => {
             const headMember = members.find((m) => m.tier === 'HEAD');
-            const coHeadMember = members.find((m) => m.tier === 'CO_HEAD');
-            const volunteers = members.filter((m) => m.tier === 'VOLUNTEER');
             const wingLabel = members[0]?.wing || 'Core Wing';
 
             return (
@@ -444,28 +441,11 @@ export default function TeamPage() {
                   </div>
                 </div>
 
-                {/* Hierarchy Layout */}
-                <div className="space-y-6">
-                  {/* Row A: Leadership of Department (Head & Co-Head) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {headMember && <DepartmentLeadershipCard member={headMember} />}
-                    {coHeadMember && <DepartmentLeadershipCard member={coHeadMember} />}
-                  </div>
-
-                  {/* Row B: Volunteers / Core Crew */}
-                  {volunteers.length > 0 && (
-                    <div className="pt-2">
-                      <div className="text-[11px] lb-mono uppercase tracking-wider text-[var(--fg-mute)] mb-3 flex items-center gap-1.5">
-                        <Users className="h-3 w-3 text-[var(--c-green)]" />
-                        <span>TEAM VOLUNTEERS &amp; CREW ({volunteers.length})</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {volunteers.map((vol) => (
-                          <VolunteerCard key={vol.id} member={vol} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                {/* Unified Council-Style Grid for All Department Members */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                  {members.map((member, idx) => (
+                    <MemberCard key={member.id} member={member} index={idx} />
+                  ))}
                 </div>
               </section>
             );
@@ -477,23 +457,58 @@ export default function TeamPage() {
 }
 
 /**
- * High-Impact Spotlight Card for Council Officers (Secretary, Deputy Secretary, Coordinators)
+ * Unified Council-Style Member Card
+ * Renders Council officers, Department Leads, and Team Volunteers with a cohesive layout
  */
-function CouncilCard({ member, index }: { member: ExtendedTeamMember; index: number }) {
-  const accent: Accent = index === 0 ? 'yellow' : index === 1 ? 'purple' : 'blue';
+function MemberCard({ member, index }: { member: ExtendedTeamMember; index: number }) {
+  const isCouncil = member.wing === 'Council';
+  const isHead = member.tier === 'HEAD';
+
+  // Determine accent color
+  let accent: Accent;
+  if (isCouncil) {
+    accent = index === 0 ? 'yellow' : index === 1 ? 'purple' : 'blue';
+  } else if (isHead) {
+    accent = 'yellow';
+  } else {
+    accent = TEAM_ACCENTS[index % TEAM_ACCENTS.length];
+  }
+
   const slugOrId = member.slug || member.id;
   const initial = member.name?.charAt(0)?.toUpperCase() || '?';
+
+  // Badge label
+  const badgeLabel = isCouncil
+    ? member.role.toUpperCase()
+    : isHead
+    ? 'HEAD'
+    : 'VOLUNTEER';
+
+  // Kicker label
+  const kickerLabel = isCouncil
+    ? 'COUNCIL OFFICER'
+    : isHead
+    ? 'DEPARTMENT LEAD'
+    : 'TEAM MEMBER';
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, delay: index * 0.06 }}
-      className={`relative group border border-[var(--c-${accent})] bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.25) }}
+      className={`relative group border ${
+        isHead || isCouncil
+          ? `border-[var(--c-${accent})]`
+          : 'border-[var(--line)] hover:border-white/30'
+      } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
     >
       <div>
         {/* Avatar with Cyber Brackets */}
-        <div className="relative w-full aspect-square border-2 border-[var(--c-${accent})] bg-[var(--surface-0)] overflow-hidden mb-4">
+        <div
+          className={`relative w-full aspect-square border-2 ${
+            isHead || isCouncil ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
+          } bg-[var(--surface-0)] overflow-hidden mb-4`}
+        >
           {member.imageUrl ? (
             <img
               src={member.imageUrl}
@@ -501,23 +516,35 @@ function CouncilCard({ member, index }: { member: ExtendedTeamMember; index: num
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center font-display text-5xl text-[var(--c-${accent})]">
+            <div
+              className={`w-full h-full flex items-center justify-center font-display text-5xl text-[var(--c-${accent})]`}
+            >
               {initial}
             </div>
           )}
 
           {/* Tier Badge */}
-          <div className="absolute top-2 right-2 bg-black/80 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[10px] font-bold px-2 py-0.5 lb-mono">
-            {member.role.toUpperCase()}
+          <div
+            className={`absolute top-2 right-2 ${
+              isHead || isCouncil
+                ? `bg-black/85 border border-[var(--c-${accent})] text-[var(--c-${accent})]`
+                : 'bg-black/80 border border-white/20 text-white'
+            } text-[10px] font-bold px-2 py-0.5 lb-mono`}
+          >
+            {badgeLabel}
           </div>
         </div>
 
         {/* Member Meta */}
         <div className="space-y-1">
-          <div className="text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold">
-            COUNCIL OFFICER
+          <div
+            className={`text-[10px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold`}
+          >
+            {kickerLabel}
           </div>
-          <h3 className="text-lg font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate">
+          <h3
+            className={`text-lg font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
+          >
             {member.name}
           </h3>
           <p className="text-xs lb-mono text-[var(--fg-dim)] uppercase">
@@ -533,144 +560,17 @@ function CouncilCard({ member, index }: { member: ExtendedTeamMember; index: num
 
       {/* Card Action Link */}
       <div className="mt-4 pt-3 border-t border-dashed border-[var(--line)] flex items-center justify-between">
-        <span className="text-[10px] lb-mono text-[var(--fg-mute)]">IITM BS</span>
+        <span className="text-[10px] lb-mono text-[var(--fg-mute)]">
+          #{member.department.toLowerCase().replace(/\s+/g, '_')}
+        </span>
         <Link
           to={`/team/${slugOrId}`}
-          className="inline-flex items-center gap-1 lb-mono text-xs font-semibold text-[var(--c-${accent})] hover:underline"
+          className={`inline-flex items-center gap-1 lb-mono text-xs font-semibold text-[var(--c-${accent})] hover:underline`}
         >
           <span>DOSSIER</span>
           <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
     </motion.div>
-  );
-}
-
-/**
- * Head and Co-Head Card for Department Leadership
- */
-function DepartmentLeadershipCard({ member }: { member: ExtendedTeamMember }) {
-  const isHead = member.tier === 'HEAD';
-  const slugOrId = member.slug || member.id;
-  const initial = member.name?.charAt(0)?.toUpperCase() || '?';
-
-  return (
-    <div
-      className={`border p-5 flex flex-col sm:flex-row gap-4 items-start justify-between bg-[var(--surface-1)] transition-colors ${
-        isHead
-          ? 'border-[var(--c-yellow)]/70 hover:border-[var(--c-yellow)]'
-          : 'border-[var(--c-blue)]/50 hover:border-[var(--c-blue)]'
-      }`}
-    >
-      <div className="flex gap-4 items-start w-full">
-        {/* Avatar */}
-        <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 border border-[var(--line)] bg-[var(--surface-2)] overflow-hidden">
-          {member.imageUrl ? (
-            <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
-          ) : (
-            <div
-              className={`w-full h-full flex items-center justify-center font-display text-3xl ${
-                isHead ? 'text-[var(--c-yellow)]' : 'text-[var(--c-blue)]'
-              }`}
-            >
-              {initial}
-            </div>
-          )}
-          <div
-            className={`absolute top-0 right-0 text-[9px] font-bold px-1.5 py-0.5 lb-mono ${
-              isHead ? 'bg-[var(--c-yellow)] text-black' : 'bg-[var(--c-blue)] text-black'
-            }`}
-          >
-            {isHead ? 'HEAD' : 'CO-HEAD'}
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`text-[9px] lb-mono uppercase font-bold px-1.5 py-0.2 border ${
-                isHead
-                  ? 'border-[var(--c-yellow)] text-[var(--c-yellow)]'
-                  : 'border-[var(--c-blue)] text-[var(--c-blue)]'
-              }`}
-            >
-              {isHead ? 'DEPARTMENT LEAD' : 'ASSOCIATE LEAD'}
-            </span>
-          </div>
-
-          <h3 className="text-base font-bold text-white truncate">{member.name}</h3>
-          <p className="text-xs lb-mono text-[var(--fg-dim)] uppercase mb-1.5">
-            {member.role}
-          </p>
-
-          {member.bio && (
-            <p className="text-xs text-[var(--fg-mute)] line-clamp-2 leading-relaxed">
-              {member.bio}
-            </p>
-          )}
-
-          <div className="mt-3 pt-2 border-t border-dashed border-[var(--line)] flex items-center justify-between">
-            <span className="text-[10px] lb-mono text-[var(--fg-mute)]">
-              #{member.department.toLowerCase().replace(/\s+/g, '_')}
-            </span>
-            <Link
-              to={`/team/${slugOrId}`}
-              className="inline-flex items-center gap-1 lb-mono text-xs font-semibold text-[var(--c-yellow)] hover:underline"
-            >
-              <span>DOSSIER</span>
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Standard Volunteer Member Tile
- */
-function VolunteerCard({ member }: { member: ExtendedTeamMember }) {
-  const slugOrId = member.slug || member.id;
-  const initial = member.name?.charAt(0)?.toUpperCase() || '?';
-
-  return (
-    <div className="border border-[var(--line)] bg-[var(--surface-0)] hover:border-white/30 p-3.5 flex flex-col justify-between transition-colors">
-      <div>
-        <div className="flex items-center gap-3 mb-2.5">
-          <div className="w-10 h-10 shrink-0 border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden">
-            {member.imageUrl ? (
-              <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[var(--fg-dim)]">
-                {initial}
-              </div>
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="text-[9px] lb-mono uppercase text-[var(--c-green)]">
-              VOLUNTEER
-            </div>
-            <h4 className="text-sm font-bold text-white truncate">{member.name}</h4>
-          </div>
-        </div>
-
-        <p className="text-[11px] lb-mono text-[var(--fg-mute)] truncate">
-          {member.role}
-        </p>
-      </div>
-
-      <div className="mt-3 pt-2 border-t border-[var(--line)]/60 flex items-center justify-between text-[10px] lb-mono">
-        <span className="text-[var(--fg-mute)]">CREW</span>
-        <Link
-          to={`/team/${slugOrId}`}
-          className="text-[var(--fg-dim)] hover:text-[var(--c-yellow)] transition-colors inline-flex items-center gap-0.5"
-        >
-          <span>PROFILE</span>
-          <ArrowRight className="h-2.5 w-2.5" />
-        </Link>
-      </div>
-    </div>
   );
 }
