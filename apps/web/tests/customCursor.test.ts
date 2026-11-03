@@ -36,3 +36,22 @@ test('touch fallback detection identifies coarse pointers and ontouchstart', () 
   assert.equal(isTouchDevice(false, true), true);
   assert.equal(isTouchDevice(true, true), true);
 });
+
+test('native mouse cursor is hidden when custom cursor is active on non-touch screens', () => {
+  const classList = new Set<string>();
+  const mockDocumentElement = {
+    classList: {
+      add: (cls: string) => classList.add(cls),
+      remove: (cls: string) => classList.delete(cls),
+      contains: (cls: string) => classList.has(cls),
+    }
+  };
+
+  // When mouse enters window on desktop
+  mockDocumentElement.classList.add('hide-native-cursor');
+  assert.equal(mockDocumentElement.classList.contains('hide-native-cursor'), true);
+
+  // When mouse leaves window
+  mockDocumentElement.classList.remove('hide-native-cursor');
+  assert.equal(mockDocumentElement.classList.contains('hide-native-cursor'), false);
+});

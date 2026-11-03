@@ -166,6 +166,14 @@
   a { color: inherit; text-decoration: none; cursor: pointer; }
   button { font-family: inherit; cursor: pointer; border: none; }
 
+  /* Tactical Custom Cursor: hide default operating system pointer when active */
+  html.hide-native-cursor,
+  html.hide-native-cursor *,
+  html.hide-native-cursor *::before,
+  html.hide-native-cursor *::after {
+    cursor: none !important;
+  }
+
   /* Selection */
   ::selection {
     background: rgba(255, 217, 59, 0.3);

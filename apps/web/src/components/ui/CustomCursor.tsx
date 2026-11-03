@@ -15,15 +15,20 @@ export const CustomCursor: React.FC = () => {
 
     const handleMouseMove = (e: MouseEvent) => {
       setPos({ x: e.clientX, y: e.clientY });
-      if (!isVisible) setIsVisible(true);
+      if (!isVisible) {
+        setIsVisible(true);
+        document.documentElement.classList.add('hide-native-cursor');
+      }
     };
 
     const handleMouseLeave = () => {
       setIsVisible(false);
+      document.documentElement.classList.remove('hide-native-cursor');
     };
 
     const handleMouseEnter = () => {
       setIsVisible(true);
+      document.documentElement.classList.add('hide-native-cursor');
     };
 
     const checkHoverTarget = (e: MouseEvent) => {
@@ -48,6 +53,7 @@ export const CustomCursor: React.FC = () => {
       window.removeEventListener('mousemove', checkHoverTarget);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
+      document.documentElement.classList.remove('hide-native-cursor');
     };
   }, [isVisible, isTouchDevice]);
 
@@ -175,6 +181,13 @@ export const CustomCursor: React.FC = () => {
       </div>
 
       <style>{`
+        html.hide-native-cursor,
+        html.hide-native-cursor *,
+        html.hide-native-cursor *::before,
+        html.hide-native-cursor *::after {
+          cursor: none !important;
+        }
+
         @keyframes reticle-rotate {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
