@@ -66,20 +66,28 @@ export default function TeamPage() {
         setLoading(true);
         const data = await api.getTeam(undefined, { compact: false });
         if (Array.isArray(data) && data.length > 0) {
-          // Merge any live database additions or edits while preserving authoritative PDF roster & hierarchy
+          // Merge live database details while guaranteeing authoritative hierarchy and leadership roles
           const merged = TESSERACT_TEAM_MEMBERS.map((base) => {
             const dbMatch = data.find(
               (m) =>
                 (m.slug && m.slug === base.slug) ||
                 (m.name && m.name.toLowerCase() === base.name.toLowerCase()),
             );
+            // Vaibhav Nargwani is strictly enforced as Co-Head of Webops
+            if (base.name.toLowerCase().includes('vaibhav')) {
+              return {
+                ...base,
+                tier: 'CO_HEAD' as const,
+                role: 'Co-Head of Webops',
+                department: 'Webops',
+                team: 'Webops',
+                wing: 'Core Wing' as const,
+              };
+            }
             return dbMatch
               ? {
-                  ...base,
                   ...dbMatch,
-                  tier: base.tier,
-                  wing: base.wing,
-                  department: base.department,
+                  ...base, // Authoritative roster rules: role, tier, wing, department ALWAYS come from base
                 }
               : base;
           });
