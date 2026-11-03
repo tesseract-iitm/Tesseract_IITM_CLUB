@@ -10,6 +10,7 @@ import {
   getOrLoadTypeWarsRoom,
   joinTypeWarsRoom,
   markTypeWarsParticipantActive,
+  resetTypeWarsRoom,
   serializeTypeWarsRoom,
   TYPE_WARS_GAME_ID,
   type TypeWarsRoomState,
@@ -113,7 +114,7 @@ function register(ns: Namespace): void {
       const room = gameSocket.data.roomCode ? await getOrLoadTypeWarsRoom(gameSocket.data.roomCode) : null;
       const participant = room?.participants.get(authUser.id);
       if (!room || !participant || room.status !== 'LOBBY') return;
-      participant.ready = true;
+      participant.ready = !participant.ready;
       emitState(ns, room);
     });
 
@@ -124,12 +125,55 @@ function register(ns: Namespace): void {
         return;
       }
       const activeCount = Array.from(room.participants.values()).filter((p) => p.active).length;
-      if (activeCount < 2) {
-        ack?.({ ok: false, error: 'NEED_MORE_PLAYERS', minPlayers: 2, currentPlayers: activeCount });
+      if (activeCount < 1) {
+        ack?.({ ok: false, error: 'NEED_MORE_PLAYERS', minPlayers: 1, currentPlayers: activeCount });
         return;
       }
       ack?.({ ok: true });
       await startRace(ns, room);
+    });
+
+    socket.on('room:rematch', async (payload: unknown, ack?: (response: unknown) => void) => {
+      const room = gameSocket.data.roomCode ? await getOrLoadTypeWarsRoom(gameSocket.data.roomCode) : null;
+      if (!room) {
+        ack?.({ ok: false, error: 'ROOM_NOT_FOUND' });
+        return;
+      }
+      // Allow host to trigger rematch in multiplayer, or solo player in 1-player mode
+      const isHost = room.hostUserId === authUser.id;
+      const isSolo = room.participants.size === 1;
+      if (!isHost && !isSolo) {
+        ack?.({ ok: false, error: 'NOT_HOST' });
+        return;
+      }
+      const difficulty = typeof (payload as any)?.difficulty === 'string' ? (payload as any).difficulty : undefined;
+      await resetTypeWarsRoom(room, difficulty);
+      ns.to(roomChannel(room.code)).emit('room:rematched');
+      emitState(ns, room);
+      ack?.({ ok: true, room: serializeTypeWarsRoom(room) });
+    });
+
+    socket.on('room:leave', async () => {
+      const room = gameSocket.data.roomCode ? await getOrLoadTypeWarsRoom(gameSocket.data.roomCode) : null;
+      if (!room) return;
+      markTypeWarsParticipantActive(room, authUser.id, false);
+      await socket.leave(roomChannel(room.code));
+      gameSocket.data.roomCode = undefined;
+
+      // Migrate host if needed
+      if (room.status === 'LOBBY' && room.hostUserId === authUser.id) {
+        const nextActive = Array.from(room.participants.values()).find((p) => p.active && p.userId !== authUser.id);
+        if (nextActive) {
+          room.hostUserId = nextActive.userId;
+          void withRetry(() => prisma.typeWarsRace.update({
+            where: { id: room.raceId },
+            data: { hostId: nextActive.userId },
+            select: { id: true },
+          }));
+          ns.to(roomChannel(room.code)).emit('room:host_migrated', { newHostUserId: nextActive.userId });
+        }
+      }
+      emitState(ns, room);
     });
 
     socket.on('progress:update', async (payload: unknown) => {
@@ -195,13 +239,26 @@ function register(ns: Namespace): void {
       if (!room) return;
       markTypeWarsParticipantActive(room, authUser.id, false);
       if (room.status === 'LOBBY' && room.hostUserId === authUser.id) {
-        room.status = 'ABORTED';
-        await withRetry(() => prisma.typeWarsRace.update({
-          where: { id: room.raceId },
-          data: { status: 'ABORTED', endedAt: new Date() },
-          select: { id: true },
-        }));
-        ns.to(roomChannel(room.code)).emit('room:aborted');
+        // Migrate host if other active players exist
+        const nextActive = Array.from(room.participants.values()).find((p) => p.active && p.userId !== authUser.id);
+        if (nextActive) {
+          room.hostUserId = nextActive.userId;
+          void withRetry(() => prisma.typeWarsRace.update({
+            where: { id: room.raceId },
+            data: { hostId: nextActive.userId },
+            select: { id: true },
+          }));
+          ns.to(roomChannel(room.code)).emit('room:host_migrated', { newHostUserId: nextActive.userId });
+        } else {
+          // Only abort if no other active player is present
+          room.status = 'ABORTED';
+          await withRetry(() => prisma.typeWarsRace.update({
+            where: { id: room.raceId },
+            data: { status: 'ABORTED', endedAt: new Date() },
+            select: { id: true },
+          }));
+          ns.to(roomChannel(room.code)).emit('room:aborted');
+        }
       }
       emitState(ns, room);
     });

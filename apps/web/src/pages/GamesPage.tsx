@@ -8,7 +8,152 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { api, type CatalogGame } from '@/lib/api';
 
-const EMPTY_GAMES: CatalogGame[] = [];
+export const DEFAULT_CATALOG_GAMES: CatalogGame[] = [
+  {
+    id: 'smash-kart',
+    title: 'SMASH KART',
+    description: 'Top-down karting chaos. Banana peels still legal.',
+    category: 'multiplayer',
+    accent: 'red',
+    players: '2-12',
+    hot: true,
+    backendReady: true,
+    rules: [
+      '3 laps per race',
+      'Items spawn every 15 seconds',
+      'Last place gets a speed boost',
+      'Final lap triggers siren',
+    ],
+    plays: 1240,
+    live: 4,
+  },
+  {
+    id: 'scribbl',
+    title: 'SCRIBBL',
+    description: "Draw it. Guess it. Argue about whether 'thingy' counts.",
+    category: 'party',
+    accent: 'yellow',
+    players: '4-16',
+    hot: true,
+    backendReady: true,
+    rules: [
+      '80 seconds per round',
+      'Faster guess = more points',
+      'Artist earns points per correct guess',
+      '3 rounds by default',
+    ],
+    plays: 3890,
+    live: 12,
+  },
+  {
+    id: 'puzzle-run',
+    title: 'PUZZLE RUN',
+    description: 'Daily logic chain. New set drops at 00:00 IST.',
+    category: 'solo',
+    accent: 'green',
+    players: '1',
+    hot: false,
+    backendReady: true,
+    rules: [
+      '5 puzzles per day',
+      'Points decrease with hints',
+      'Streak bonus: +10% per day',
+      'Resets at midnight IST',
+    ],
+    plays: 5620,
+    live: 2,
+  },
+  {
+    id: 'brain-teasers',
+    title: 'BRAIN TEASERS',
+    description: 'Five teasers a day. Easy, hard, devious, plus a bonus.',
+    category: 'solo',
+    accent: 'blue',
+    players: '1',
+    hot: false,
+    backendReady: true,
+    rules: [
+      'Daily refresh at 00:00 IST',
+      'Difficulty: easy→normal→hard→devious→bonus',
+      'No time limit',
+      'Submit once — no revisions',
+    ],
+    plays: 2140,
+    live: 1,
+  },
+  {
+    id: 'cipher-lab',
+    title: 'CIPHER LAB',
+    description: 'Crack the cipher before the timer runs out. Hints cost points.',
+    category: 'solo',
+    accent: 'purple',
+    players: '1',
+    hot: false,
+    backendReady: true,
+    rules: [
+      '10-minute timer',
+      'Hints reduce score by 100',
+      'Leaderboard resets weekly',
+      'New cipher every 48 hours',
+    ],
+    plays: 1890,
+    live: 0,
+  },
+  {
+    id: 'riddle-room',
+    title: 'RIDDLE ROOM',
+    description: 'Cooperative escape room. One riddle locks the next.',
+    category: 'party',
+    accent: 'red',
+    players: '2-8',
+    hot: false,
+    backendReady: true,
+    rules: [
+      'Solve chained clues in sequence',
+      'Wrong clues lock the next room briefly',
+      'Team coordination is required',
+      'One run per room per day',
+    ],
+    plays: 1440,
+    live: 3,
+  },
+  {
+    id: 'type-wars',
+    title: 'TYPE WARS',
+    description: 'Speed-typing duels. WPM is a personality trait.',
+    category: 'multiplayer',
+    accent: 'yellow',
+    players: '2-6',
+    hot: false,
+    backendReady: true,
+    rules: [
+      'Short duel rounds',
+      'Accuracy and speed both matter',
+      'Best of three determines winner',
+      'Lag compensation is server-side',
+    ],
+    plays: 990,
+    live: 6,
+  },
+  {
+    id: 'trivia-tower',
+    title: 'TRIVIA TOWER',
+    description: 'Climb the tower one question at a time. Wrong = fall.',
+    category: 'party',
+    accent: 'green',
+    players: '4-20',
+    hot: true,
+    backendReady: true,
+    rules: [
+      'Answer questions in increasing difficulty',
+      'Wrong answer drops your level',
+      'Fast streaks unlock bonus steps',
+      'Round ends at top floor or timeout',
+    ],
+    plays: 2310,
+    live: 8,
+  },
+];
 
 function formatPlays(value: number): string {
   return new Intl.NumberFormat('en-IN').format(value);
@@ -179,7 +324,7 @@ export default function GamesPage() {
     staleTime: 1000 * 60,
   });
 
-  const games = data?.games ?? EMPTY_GAMES;
+  const games = data?.games && data.games.length > 0 ? data.games : DEFAULT_CATALOG_GAMES;
 
   const categories = useMemo(() => ([
     { id: 'all', label: 'all_games', accent: 'yellow' as const, count: games.length },
@@ -205,7 +350,7 @@ export default function GamesPage() {
           PICK YOUR <span className="lb-h-accent">POISON.</span>
         </h1>
         <p className="lb-sub" style={{ marginBottom: 32, maxWidth: 480 }}>
-          {isLoading ? 'Loading games...' : `${games.length} games registered. New ones drop monthly.`}
+          {isLoading && !games.length ? 'Loading games...' : `${games.length} games registered. New ones drop monthly.`}
         </p>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -226,7 +371,7 @@ export default function GamesPage() {
       </section>
 
       <section style={{ padding: '0 clamp(18px, 4vw, 56px) 80px' }}>
-        {error && (
+        {error && games.length === 0 && (
           <Brackets tag="error" accent="red" style={{ padding: 28, marginBottom: 24 }}>
             <p className="lb-mono" style={{ fontSize: '11px', color: 'var(--c-red)' }}>
               failed to load games: {error instanceof Error ? error.message : 'unknown error'}

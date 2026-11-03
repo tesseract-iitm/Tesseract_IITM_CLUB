@@ -170,7 +170,15 @@ gamesRouter.get('/leaderboard', async (req: Request, res: Response) => {
 
 gamesRouter.get('/', async (_req: Request, res: Response) => {
   try {
-    const statsByGameId = await toGameStatsMap();
+    let statsByGameId = new Map<string, GameStats>();
+    try {
+      statsByGameId = await toGameStatsMap();
+    } catch (statsError) {
+      logger.warn('Failed to load dynamic game stats from database, using base catalog stats', {
+        error: statsError instanceof Error ? statsError.message : String(statsError),
+      });
+    }
+
     return ApiResponse.success(res, {
       games: GAME_CATALOG.map((game) => {
         const stats = statsByGameId.get(game.id);
@@ -197,15 +205,21 @@ gamesRouter.get('/:id', async (req: Request, res: Response) => {
       return ApiResponse.notFound(res, 'Game not found');
     }
 
-    const [sessionCount, liveCount] = await Promise.all([
-      withRetry(() => prisma.gameSession.count({ where: { gameId: game.id } })),
-      withRetry(() => prisma.gameSession.count({
-        where: {
-          gameId: game.id,
-          createdAt: { gte: new Date(Date.now() - LIVE_WINDOW_MS) },
-        },
-      })),
-    ]);
+    let sessionCount = 0;
+    let liveCount = 0;
+    try {
+      [sessionCount, liveCount] = await Promise.all([
+        withRetry(() => prisma.gameSession.count({ where: { gameId: game.id } })),
+        withRetry(() => prisma.gameSession.count({
+          where: {
+            gameId: game.id,
+            createdAt: { gte: new Date(Date.now() - LIVE_WINDOW_MS) },
+          },
+        })),
+      ]);
+    } catch {
+      // Graceful fallback to base stats if database is down
+    }
 
     return ApiResponse.success(res, {
       ...game,

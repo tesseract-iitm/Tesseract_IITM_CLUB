@@ -318,3 +318,60 @@ export function markTypeWarsParticipantActive(room: TypeWarsRoomState, userId: s
     room.lastActivityAt = Date.now();
   }
 }
+
+export async function resetTypeWarsRoom(
+  room: TypeWarsRoomState,
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD',
+): Promise<TypeWarsRoomState> {
+  const passages = await withRetry(() => prisma.typeWarsPassage.findMany({
+    where: {
+      active: true,
+      ...(difficulty ? { difficulty } : {}),
+    },
+    select: { id: true, text: true, wordCount: true },
+    take: 50,
+  }));
+
+  if (passages.length > 0) {
+    const nextPassage = passages[Math.floor(Math.random() * passages.length)];
+    room.passage = nextPassage;
+  }
+
+  room.status = 'LOBBY';
+  room.startedAt = null;
+  room.sessionsRecorded = false;
+  room.finalizingPromise = undefined;
+  if (room.finishTimer) {
+    clearTimeout(room.finishTimer);
+    room.finishTimer = null;
+  }
+
+  for (const participant of room.participants.values()) {
+    participant.ready = false;
+    participant.finished = false;
+    participant.finishedAt = null;
+    participant.charsTyped = 0;
+    participant.wpm = 0;
+    participant.accuracy = 0;
+    participant.rank = null;
+    participant.score = 0;
+    participant.lastProgressAt = 0;
+    participant.durationSeconds = null;
+  }
+
+  await withRetry(() => prisma.typeWarsRace.update({
+    where: { id: room.raceId },
+    data: {
+      status: 'LOBBY',
+      passageId: room.passage.id,
+      startedAt: null,
+      endedAt: null,
+    },
+    select: { id: true },
+  }));
+
+  room.lastActivityAt = Date.now();
+  typeWarsRooms.touch(room.code);
+  return room;
+}
+
