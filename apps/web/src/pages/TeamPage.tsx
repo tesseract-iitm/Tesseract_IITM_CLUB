@@ -654,15 +654,15 @@ export default function TeamPage() {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3.5">
                   {/* Row 1: Leadership (Head and Co-Head together) */}
                   {leaders.length > 0 && (
                     <div>
-                      <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--c-yellow)] mb-2 flex items-center gap-1.5 font-bold">
+                      <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--c-yellow)] mb-1.5 flex items-center gap-1.5 font-bold">
                         <Crown className="h-3 w-3" />
                         <span>// LEADERSHIP (HEAD &amp; CO-HEAD)</span>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                         {leaders.map((leader, lIdx) => (
                           <MemberCard key={leader.id} member={leader} index={lIdx} />
                         ))}
@@ -674,12 +674,12 @@ export default function TeamPage() {
                   {otherMembers.length > 0 && (
                     <div>
                       {leaders.length > 0 && (
-                        <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--fg-dim)] mb-2 flex items-center gap-1.5 font-bold">
+                        <div className="text-[9px] lb-mono uppercase tracking-wider text-[var(--fg-dim)] mb-1.5 flex items-center gap-1.5 font-bold">
                           <Users className="h-3 w-3" />
                           <span>// TEAM SQUAD</span>
                         </div>
                       )}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                         {otherMembers.map((member, mIdx) => (
                           <MemberCard key={member.id} member={member} index={mIdx + leaders.length} />
                         ))}
@@ -753,7 +753,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
         className={`relative group border border-[var(--c-${accent})] shadow-[0_0_16px_rgba(201,160,46,0.15)] bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-5 flex flex-col justify-between transition-all`}
       >
         <div>
-          {/* Full-Size Aspect-Square Avatar */}
+          {/* Full-Size Aspect-Square Avatar (1:1 Orientation) */}
           <div
             className={`relative w-full aspect-square border-2 border-[var(--c-${accent})] bg-[var(--surface-0)] overflow-hidden mb-4`}
           >
@@ -822,7 +822,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
     );
   }
 
-  // DEPARTMENT CARDS: Compact layout so two rows fit in one viewport
+  // DEPARTMENT CARDS: Compact 1:1 orientation layout so two rows fit in one viewport
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -830,16 +830,16 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
       transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.2) }}
       className={`relative group border ${
         isHead || isCoHead
-          ? `border-[var(--c-${accent})] shadow-[0_0_14px_rgba(201,160,46,0.12)]`
+          ? `border-[var(--c-${accent})] shadow-[0_0_12px_rgba(201,160,46,0.12)]`
           : 'border-[var(--line)] hover:border-white/30'
-      } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-3 flex flex-col justify-between transition-all`}
+      } bg-[var(--surface-1)] hover:bg-[var(--surface-1)]/90 p-2.5 flex flex-col justify-between transition-all w-full max-w-[200px]`}
     >
       <div>
         {/* 1:1 Orientation Avatar */}
         <div
           className={`relative w-full aspect-square border-2 ${
             isHead || isCoHead ? `border-[var(--c-${accent})]` : 'border-[var(--line)]'
-          } bg-[var(--surface-0)] overflow-hidden mb-2.5`}
+          } bg-[var(--surface-0)] overflow-hidden mb-2`}
         >
           {member.imageUrl ? (
             <img
@@ -849,7 +849,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
             />
           ) : (
             <div
-              className={`w-full h-full flex items-center justify-center font-display text-4xl text-[var(--c-${accent})]`}
+              className={`w-full h-full flex items-center justify-center font-display text-3xl text-[var(--c-${accent})]`}
             >
               {initial}
             </div>
@@ -858,7 +858,7 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
           {/* Tier Badge: Only shown if member has leadership role */}
           {badgeLabel && (
             <div
-              className={`absolute top-1.5 right-1.5 bg-black/90 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[9px] font-bold px-1.5 py-0.5 lb-mono tracking-wider`}
+              className={`absolute top-1 right-1 bg-black/90 border border-[var(--c-${accent})] text-[var(--c-${accent})] text-[8.5px] font-bold px-1.5 py-0.5 lb-mono tracking-wider`}
             >
               {badgeLabel}
             </div>
@@ -869,34 +869,34 @@ function MemberCard({ member, index }: { member: ExtendedTeamMember; index: numb
         <div className="space-y-0.5">
           {kickerLabel && (
             <div
-              className={`text-[9px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold truncate`}
+              className={`text-[8.5px] lb-mono uppercase text-[var(--c-${accent})] tracking-widest font-bold truncate`}
             >
               {kickerLabel}
             </div>
           )}
           <h3
-            className={`text-sm sm:text-base font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
+            className={`text-xs sm:text-sm font-bold text-white group-hover:text-[var(--c-${accent})] transition-colors truncate`}
             title={member.name}
           >
             {member.name}
           </h3>
-          <p className="text-[11px] lb-mono text-[var(--fg-dim)] uppercase truncate">
+          <p className="text-[10px] lb-mono text-[var(--fg-dim)] uppercase truncate">
             {member.role}
           </p>
         </div>
       </div>
 
       {/* Card Action Link */}
-      <div className="mt-2.5 pt-2 border-t border-dashed border-[var(--line)] flex items-center justify-between">
-        <span className="text-[9px] lb-mono text-[var(--fg-mute)]">
+      <div className="mt-2 pt-1.5 border-t border-dashed border-[var(--line)] flex items-center justify-between">
+        <span className="text-[8.5px] lb-mono text-[var(--fg-mute)]">
           #{member.department.toLowerCase().replace(/\s+/g, '_')}
         </span>
         <Link
           to={`/team/${slugOrId}`}
-          className={`inline-flex items-center gap-1 lb-mono text-[11px] font-semibold text-[var(--c-${accent})] hover:underline`}
+          className={`inline-flex items-center gap-1 lb-mono text-[10px] font-semibold text-[var(--c-${accent})] hover:underline`}
         >
           <span>DOSSIER</span>
-          <ArrowRight className="h-2.5 w-2.5" />
+          <ArrowRight className="h-2 w-2" />
         </Link>
       </div>
     </motion.div>
