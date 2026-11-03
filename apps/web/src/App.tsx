@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { AuthProvider } from '@/context/AuthContext';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { CustomCursor } from '@/components/ui/CustomCursor';
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#000' }}>
@@ -182,6 +183,7 @@ function App() {
           <ErrorBoundary>
             <Router>
               <ScrollToTop />
+              <CustomCursor />
               <Toaster
                 position="top-right"
                 toastOptions={{ style: { background: 'var(--bg-2)', border: '1px solid var(--line-2)', color: '#fff', fontFamily: '"JetBrains Mono", monospace', borderRadius: 0 } }}
